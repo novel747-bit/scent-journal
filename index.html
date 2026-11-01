@@ -357,7 +357,7 @@
                 <div class="bg-cream/60 border border-stone-200/90 rounded-xl p-4 space-y-3">
                     <div class="flex items-center justify-between flex-wrap gap-2">
                         <span class="text-xs font-semibold text-ink flex items-center gap-1.5">
-                            <i class="ph ph-sparkle text-gold"></i> 步驟 1：輸入品牌與香水名稱（支援自動帶入香調表）
+                            <i class="ph ph-sparkle text-gold"></i> 步驟 1：輸入品牌與香水名稱
                         </span>
                         <button type="button" id="btn-auto-lookup" onclick="app.lookupFragranceInfo(true)" class="px-3 py-1 rounded-lg bg-ink text-paper hover:bg-stone-800 text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
                             <i class="ph ph-magnifying-glass"></i> <span>自動查找香調</span>
@@ -388,10 +388,10 @@
                     </div>
 
                     <div id="brand-quick-suggestions" class="hidden pt-1">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <p class="text-[11px] text-muted">點選該品牌熱門香水一鍵帶入：</p>
-                            <button type="button" onclick="app.fetchOnlineBrandSuggestions()" class="text-[11px] text-gold hover:underline flex items-center gap-1">
-                                <i class="ph ph-globe"></i> 搜尋更多該品牌熱門款
+                        <div class="flex items-center justify-between mb-1.5 border-b border-stone-200 pb-1.5">
+                            <p class="text-[11px] text-muted font-medium">快速帶入該品牌紀錄：</p>
+                            <button type="button" onclick="app.fetchOnlineBrandSuggestions()" class="text-[11px] text-gold hover:underline flex items-center gap-1 font-medium bg-white px-2 py-0.5 rounded shadow-sm border border-stone-200">
+                                <i class="ph ph-globe text-sm"></i> 點此上網搜尋更多熱門款
                             </button>
                         </div>
                         <div id="brand-suggestion-chips" class="flex flex-wrap gap-1.5"></div>
@@ -547,7 +547,6 @@
             selectedFamily: 'all',
             isSearchOpen: false,
             isFilterOpen: false,
-            brandDebounceTimer: null,
             lastTypedBrand: '',
 
             init() {
@@ -782,16 +781,23 @@
 
             populateBrandDropdown(filterText = '') {
                 const listEl = document.getElementById('brand-custom-list');
-                const brands = [...new Set(FRAGRANCE_CATALOG.map(item => item.brand))].sort();
-                let filtered = brands;
+                let matchedBrands = [];
+                
                 if (filterText) {
                     const norm = filterText.toLowerCase();
-                    filtered = brands.filter(b => b.toLowerCase().includes(norm));
+                    const matchedItems = FRAGRANCE_CATALOG.filter(c => {
+                        const keys = c.searchKeywords || [];
+                        return c.brand.toLowerCase().includes(norm) || keys.some(k => k.includes(norm) || norm.includes(k));
+                    });
+                    matchedBrands = [...new Set(matchedItems.map(c => c.brand))].sort();
+                } else {
+                    matchedBrands = [...new Set(FRAGRANCE_CATALOG.map(c => c.brand))].sort();
                 }
-                if (filtered.length === 0) {
+
+                if (matchedBrands.length === 0) {
                     listEl.innerHTML = `<li class="px-3.5 py-2 text-muted text-xs">無相符品牌，可直接輸入建立新品牌</li>`;
                 } else {
-                    listEl.innerHTML = filtered.map(b => `
+                    listEl.innerHTML = matchedBrands.map(b => `
                         <li class="px-3.5 py-2 hover:bg-goldLight/40 cursor-pointer text-ink transition-colors" onclick="app.selectBrand('${this.escapeHtml(b)}')">
                             ${this.escapeHtml(b)}
                         </li>
@@ -826,25 +832,33 @@
             populateNameDropdown(filterText = '') {
                 const listEl = document.getElementById('name-custom-list');
                 const currentBrand = document.getElementById('form-brand').value.trim().toLowerCase();
-                let availableNames = [];
+                let availableItems = [];
+                
                 if (currentBrand) {
-                    availableNames = FRAGRANCE_CATALOG
-                        .filter(c => c.brand.toLowerCase().includes(currentBrand) || currentBrand.includes(c.brand.toLowerCase()))
-                        .map(c => c.name);
+                    availableItems = FRAGRANCE_CATALOG.filter(c => {
+                        const keys = c.searchKeywords || [];
+                        return c.brand.toLowerCase().includes(currentBrand) || keys.some(k => k.includes(currentBrand) || currentBrand.includes(k));
+                    });
                 } else {
-                    availableNames = [...new Set(FRAGRANCE_CATALOG.map(c => c.name))];
+                    availableItems = FRAGRANCE_CATALOG;
                 }
                 
-                let filtered = availableNames.sort();
+                let matchedNames = [];
                 if (filterText) {
                     const norm = filterText.toLowerCase();
-                    filtered = availableNames.filter(n => n.toLowerCase().includes(norm));
+                    const matched = availableItems.filter(c => {
+                        const keys = c.searchKeywords || [];
+                        return c.name.toLowerCase().includes(norm) || keys.some(k => k.includes(norm) || norm.includes(k));
+                    });
+                    matchedNames = [...new Set(matched.map(c => c.name))].sort();
+                } else {
+                    matchedNames = [...new Set(availableItems.map(c => c.name))].sort();
                 }
 
-                if (filtered.length === 0) {
+                if (matchedNames.length === 0) {
                     listEl.innerHTML = `<li class="px-3.5 py-2 text-muted text-xs">無相符香水，可直接輸入建立新香水</li>`;
                 } else {
-                    listEl.innerHTML = filtered.map(n => `
+                    listEl.innerHTML = matchedNames.map(n => `
                         <li class="px-3.5 py-2 hover:bg-goldLight/40 cursor-pointer text-ink transition-colors" onclick="app.selectName('${this.escapeHtml(n)}')">
                             ${this.escapeHtml(n)}
                         </li>
@@ -875,11 +889,13 @@
                 nameEl.value = nameStr;
                 document.getElementById('name-custom-list').classList.add('hidden');
 
-                const brandVal = brandEl.value.trim();
-                const found = FRAGRANCE_CATALOG.find(c => 
-                    c.name === nameStr && 
-                    (!brandVal || c.brand.toLowerCase().includes(brandVal.toLowerCase()))
-                );
+                const brandVal = brandEl.value.trim().toLowerCase();
+                const found = FRAGRANCE_CATALOG.find(c => {
+                    if (c.name !== nameStr) return false;
+                    if (!brandVal) return true;
+                    const keys = c.searchKeywords || [];
+                    return c.brand.toLowerCase().includes(brandVal) || keys.some(k => k.includes(brandVal) || brandVal.includes(k));
+                });
 
                 if (found) {
                     this.applyCatalogItem(found.brand, found.name);
@@ -906,24 +922,20 @@
                 }
 
                 const suggestionBox = document.getElementById('brand-quick-suggestions');
-                if (this.brandDebounceTimer) clearTimeout(this.brandDebounceTimer);
 
                 if (!normBrand) {
                     suggestionBox.classList.add('hidden');
                     return;
                 }
 
-                const matched = FRAGRANCE_CATALOG.filter(item => item.brand.toLowerCase().includes(normBrand));
-                if (matched.length >= 5) {
-                    this.renderBrandSuggestionChips(matched);
-                } else if (normBrand.length >= 2) {
-                    if (matched.length > 0) {
-                        this.renderBrandSuggestionChips(matched);
-                    }
-                    this.brandDebounceTimer = setTimeout(() => {
-                        this.fetchOnlineBrandSuggestions();
-                    }, 600);
-                }
+                suggestionBox.classList.remove('hidden');
+
+                const matched = FRAGRANCE_CATALOG.filter(item => {
+                    const keys = item.searchKeywords || [];
+                    return item.brand.toLowerCase().includes(normBrand) || keys.some(k => k.includes(normBrand));
+                });
+
+                this.renderBrandSuggestionChips(matched);
             },
 
             onNameInput() {
@@ -931,22 +943,30 @@
             },
 
             renderBrandSuggestionChips(items) {
-                const suggestionBox = document.getElementById('brand-quick-suggestions');
                 const chipsContainer = document.getElementById('brand-suggestion-chips');
-                suggestionBox.classList.remove('hidden');
                 
-                chipsContainer.innerHTML = items.map(m => `
-                    <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all">
-                        ${this.escapeHtml(m.name)}
-                    </button>
-                `).join('');
+                if (items.length === 0) {
+                    chipsContainer.innerHTML = '<span class="text-[11px] text-muted py-1 bg-stone-100 px-2 rounded">本地尚無紀錄，點擊上方按鈕上網找尋</span>';
+                } else {
+                    chipsContainer.innerHTML = items.map(m => `
+                        <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all">
+                            ${this.escapeHtml(m.name)}
+                        </button>
+                    `).join('');
+                }
             },
 
             async fetchOnlineBrandSuggestions() {
                 const brand = document.getElementById('form-brand').value.trim();
-                if (!brand) return;
+                if (!brand) {
+                    this.showToast('請先輸入品牌名稱，再搜尋熱門款', 'error');
+                    return;
+                }
                 const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-                if (!apiKey) return;
+                if (!apiKey) {
+                    this.showToast('請先設定金鑰，才能啟用線上搜尋', 'error');
+                    return;
+                }
 
                 this.showLookupStatus(`正在查找網路上「${brand}」最熱門的香水清單...`, true);
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
@@ -991,43 +1011,48 @@
                     let text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
                     
                     if (text) {
-                        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-                        const list = JSON.parse(text);
-                        
-                        if (Array.isArray(list) && list.length > 0) {
-                            list.forEach(item => {
-                                const cleanBrand = this.normalizeBrandName(item.brand || brand);
-                                const cleanName = item.name.trim();
-                                
-                                const exists = FRAGRANCE_CATALOG.some(c => 
-                                    c.brand.toLowerCase() === cleanBrand.toLowerCase() && 
-                                    c.name.toLowerCase() === cleanName.toLowerCase()
-                                );
-                                
-                                if (!exists) {
-                                    FRAGRANCE_CATALOG.push({
-                                        brand: cleanBrand,
-                                        name: cleanName,
-                                        searchKeywords: [cleanBrand.toLowerCase(), cleanName.toLowerCase()],
-                                        concentration: item.concentration,
-                                        family: item.family,
-                                        topNotes: item.topNotes || [],
-                                        midNotes: item.midNotes || [],
-                                        baseNotes: item.baseNotes || []
-                                    });
-                                }
-                            });
-                            const normBrandFilter = brand.toLowerCase();
-                            const matched = FRAGRANCE_CATALOG.filter(c => c.brand.toLowerCase().includes(normBrandFilter));
-                            this.renderBrandSuggestionChips(matched.length >= 5 ? matched : list);
-                            this.showLookupStatus(`已為你載入「${brand}」的熱門香水，點選即可一鍵帶入`, false);
-                            return;
+                        const jsonMatch = text.match(/\[[\s\S]*\]/);
+                        if (jsonMatch) {
+                            const list = JSON.parse(jsonMatch[0]);
+                            
+                            if (Array.isArray(list) && list.length > 0) {
+                                list.forEach(item => {
+                                    const cleanBrand = this.normalizeBrandName(item.brand || brand);
+                                    const cleanName = item.name.trim();
+                                    
+                                    const exists = FRAGRANCE_CATALOG.some(c => 
+                                        c.brand.toLowerCase() === cleanBrand.toLowerCase() && 
+                                        c.name.toLowerCase() === cleanName.toLowerCase()
+                                    );
+                                    
+                                    if (!exists) {
+                                        FRAGRANCE_CATALOG.push({
+                                            brand: cleanBrand,
+                                            name: cleanName,
+                                            searchKeywords: [cleanBrand, cleanName, item.brand, item.name].filter(Boolean).map(k => String(k).toLowerCase()),
+                                            concentration: item.concentration,
+                                            family: item.family,
+                                            topNotes: item.topNotes || [],
+                                            midNotes: item.midNotes || [],
+                                            baseNotes: item.baseNotes || []
+                                        });
+                                    }
+                                });
+                                const normBrandFilter = brand.toLowerCase();
+                                const matched = FRAGRANCE_CATALOG.filter(c => {
+                                    const keys = c.searchKeywords || [];
+                                    return c.brand.toLowerCase().includes(normBrandFilter) || keys.some(k => k.includes(normBrandFilter));
+                                });
+                                this.renderBrandSuggestionChips(matched.length >= 5 ? matched : list);
+                                this.showLookupStatus(`已為你載入「${brand}」的熱門香水，點選即可一鍵帶入`, false);
+                                return;
+                            }
                         }
                     }
-                    throw new Error('Empty list');
+                    throw new Error('Empty list or JSON parse failed');
                 } catch (e) {
                     console.error("熱門清單檢索錯誤:", e);
-                    this.showLookupStatus(`已完成品牌檢索，請直接輸入香水名稱並點擊「自動查找香調」`, false);
+                    this.showLookupStatus(`搜尋失敗，請確保金鑰正確或稍後再試`, false);
                 }
             },
 
@@ -1078,8 +1103,8 @@
                 const brand = document.getElementById('form-brand').value.trim();
                 const name = document.getElementById('form-name').value.trim();
 
-                if (!brand && !name) {
-                    this.showToast('請先輸入品牌與香水名稱', 'error');
+                if (!brand || !name) {
+                    this.showToast('請完整輸入「品牌」與「香水名稱」再進行查找', 'error');
                     return;
                 }
 
@@ -1088,13 +1113,13 @@
 
                 const localMatch = FRAGRANCE_CATALOG.find(item => {
                     const keywords = item.searchKeywords || [];
-                    const bMatch = !normBrand || 
-                                   item.brand.toLowerCase().includes(normBrand) || 
-                                   keywords.some(k => k.includes(normBrand));
+                    const bMatch = item.brand.toLowerCase().includes(normBrand) || 
+                                   normBrand.includes(item.brand.toLowerCase()) ||
+                                   keywords.some(k => k.includes(normBrand) || normBrand.includes(k));
                                    
-                    const nMatch = !normName || 
-                                   item.name.toLowerCase().includes(normName) || 
-                                   keywords.some(k => k.includes(normName));
+                    const nMatch = item.name.toLowerCase().includes(normName) || 
+                                   normName.includes(item.name.toLowerCase()) ||
+                                   keywords.some(k => k.includes(normName) || normName.includes(k));
                                    
                     return bMatch && nMatch;
                 });
@@ -1107,11 +1132,11 @@
 
                 const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
                 if (!apiKey) {
-                    this.showToast('本機資料庫無此香水，請點擊右上角「設定金鑰」以啟用線上 AI 查找', 'error');
+                    this.showToast('本機無此紀錄，請點擊右上角「設定金鑰」以啟用線上 AI 查找', 'error');
                     return;
                 }
 
-                this.showLookupStatus(`本機資料庫無此筆資料，正在透過 AI 上網檢索...`, true);
+                this.showLookupStatus(`本機無此筆資料，正在透過 AI 上網檢索...`, true);
 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                 
@@ -1152,15 +1177,17 @@
                     let text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
                     
                     if (text) {
-                        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
-                        const data = JSON.parse(text);
-                        
-                        data.brand = this.normalizeBrandName(data.brand || brand);
-                        this.fillFragranceFields(data);
-                        this.showLookupStatus(`已透過線上 AI 找到並帶入正體中文香調表`, false);
-                        return;
+                        const jsonMatch = text.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            const data = JSON.parse(jsonMatch[0]);
+                            
+                            data.brand = this.normalizeBrandName(data.brand || brand);
+                            this.fillFragranceFields(data);
+                            this.showLookupStatus(`已透過線上 AI 找到並帶入正體中文香調表`, false);
+                            return;
+                        }
                     }
-                    throw new Error('Empty result');
+                    throw new Error('Empty result or JSON parse failed');
                 } catch (e) {
                     console.error("AI 解析錯誤:", e);
                     this.showLookupStatus(`未能找到該香水，請手動填寫`, false);
