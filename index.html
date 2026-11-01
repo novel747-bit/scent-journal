@@ -343,7 +343,7 @@
         <div class="bg-paper border border-stone-200 rounded-2xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
             <div class="px-5 py-4 bg-cream border-b border-stone-200 flex items-center justify-between">
                 <div>
-                    <h2 id="modal-form-title" class="font-editorial text-xl font-bold text-ink">新增香水</h2>
+                    <h2 id="modal-form-title" class="font-editorial text-xl font-bold text-ink">新增香水與香調表</h2>
                     <p class="text-xs text-muted">點擊「自動查找香調」將優先搜尋本機資料庫，找不到才啟用 AI 檢索，皆無結果則可手動填寫</p>
                 </div>
                 <button onclick="app.closePerfumeModal()" class="w-8 h-8 rounded-full hover:bg-stone-200/70 flex items-center justify-center text-muted hover:text-ink">
@@ -376,7 +376,7 @@
                             <ul id="brand-custom-list" class="hidden absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1 text-sm ring-1 ring-black/5"></ul>
                         </div>
                         <div class="relative" id="name-dropdown-container">
-                            <label class="block text-xs font-medium text-muted mb-1">香水名稱 (Name) *</label>
+                            <label class="block text-xs font-medium text-muted mb-1">香水名稱 (台灣中文譯名 + 英文) *</label>
                             <div class="relative">
                                 <input type="text" id="form-name" autocomplete="off" required placeholder="留空按查找列出5款候選，或輸入名稱搜尋..." class="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
                             </div>
@@ -385,7 +385,7 @@
 
                     <div id="brand-quick-suggestions" class="hidden pt-1">
                         <div class="flex items-center justify-between mb-1.5 border-b border-stone-200 pb-1.5">
-                            <p class="text-[11px] text-muted font-medium">該品牌香水候選（點選一鍵帶入名稱與香調）：</p>
+                            <p class="text-[11px] text-muted font-medium">該品牌香水候選（點選一鍵帶入台灣譯名、主香調與前中後調）：</p>
                         </div>
                         <div id="brand-suggestion-chips" class="flex flex-wrap gap-1.5"></div>
                     </div>
@@ -502,7 +502,7 @@
             PERFUMES: 'scentjournal_perfumes_v3',
             LOGS: 'scentjournal_sotd_logs_v3',
             API_KEY: 'scentjournal_gemini_apikey_v1',
-            CATALOG_CACHE: 'scentjournal_bilingual_catalog_v1'
+            CATALOG_CACHE: 'scentjournal_bilingual_catalog_v2'
         };
 
         const BASE_FAMILIES = ['木質調', '花香調', '柑橘調', '果香調', '草本綠葉調', '麝香調', '東方調', '水生調', '皮革調', '美食調'];
@@ -560,8 +560,52 @@
             { canonical: 'Loewe', aliases: ['loewe', '羅意威'] }
         ];
 
+        // 台灣專櫃與台灣代理商標準中文譯名字典（強制最高優先級）
         const BUILTIN_PERFUME_ZH_MAP = {
+            // Le Labo
+            'another 13': '別樣 13',
+            'santal 33': '檀香 33',
+            'the noir 29': '黑茶 29',
+            'thé noir 29': '黑茶 29',
+            'rose 31': '玫瑰 31',
+            'bergamote 22': '佛手柑 22',
+            'the matcha 26': '末茶 26',
+            'thé matcha 26': '末茶 26',
+            'lavande 31': '薰衣草 31',
+            'gaiac 10': '東京癒創木 10',
+            'baie 19': '樹果 19',
+            'lys 41': '百合 41',
+            'tonka 25': '零陵香豆 25',
+            'fleur d\'oranger 27': '橙花 27',
+            'neroli 36': '苦橙葉 36',
+            'jasmin 17': '茉莉 17',
+            'vetiver 46': '岩蘭草 46',
+            'labdanum 18': '勞丹脂 18',
+            'ylang 49': '依蘭 49',
+            'patchouli 24': '廣藿香 24',
+            'amkrette 9': '黃葵 9',
+            'ambrette 9': '黃葵 9',
+            'iris 39': '鳶尾花 39',
+            'oud 27': '烏木 27',
+            'citron 28': '首爾香櫞 28',
+            'mousse de chene 30': '阿姆斯特丹橡苔 30',
+            'cedrat 37': '柏林青櫞 37',
+            'tabac 28': '邁阿密菸草 28',
+            'bigarade 18': '香港苦橙 18',
+            'myrrhe 55': '上海沒藥 55',
+            'coriandre 39': '墨西哥城芫荽 39',
+            'osmanthus 19': '京都金木犀 19',
+            'vanille 44': '巴黎香草 44',
+            'poivre 23': '倫敦胡椒 23',
+            'musc 25': '洛杉磯麝香 25',
+            'tubereuse 40': '紐約晚香玉 40',
+            'aldehydues 44': '達拉斯醛香 44',
+            'benjoin 19': '莫斯科安息香 19',
+            'limette 37': '舊金山萊姆 37',
+            'baie rose 26': '芝加哥粉紅胡椒 26',
+            // Jo Malone London
             'english pear & freesia': '英國梨與小蒼蘭',
+            'english pear & sweet pea': '英國梨與甜豌豆',
             'wood sage & sea salt': '鼠尾草與海鹽',
             'wild bluebell': '藍風鈴',
             'peony & blush suede': '牡丹與胭紅麂絨',
@@ -581,6 +625,12 @@
             'cypress & grapevine': '絲柏與葡萄藤',
             'silver birch & lavender': '白樺木與薰衣草',
             'english oak & hazelnut': '英國橡樹與榛果',
+            ' scarlet poppy': '緋紅罌粟',
+            'scarlet poppy': '緋紅罌粟',
+            'jasmine sambac & marigold': '茉莉與金盞花',
+            'tuberose angelica': '夜來香與白芷',
+            'hinoki & cedarwood': '檜木與雪松',
+            // Diptyque
             'fleur de peau': '肌膚之華',
             'do son': '杜桑',
             'tam dao': '譚道',
@@ -593,32 +643,35 @@
             'eau rose': '玫瑰之水',
             'eau capitale': '花都之水',
             'eau duelle': '杜耶爾',
-            'tempo': '廣藿香 Tempo',
+            'tempo': 'パチュリ Tempo',
             'oyedo': '東京',
             'olene': '奧利恩',
             "l'eau papier": '紙染之水',
             'leau papier': '紙染之水',
+            'eau de minthe': '青蕨',
+            'kyoto': '京都',
+            'lilyphea': '睡蓮粼波',
+            'lunamaris': '月影貝母',
+            'bois corse': '科西嘉樹紋',
+            // Byredo
             'blanche': '返璞歸真',
             'gypsy water': '吉普賽之水',
             'mojave ghost': '莫哈維之影',
-            "rose of no man's land": '無人區玫瑰',
+            "rose of no man's land": '無人之境',
             "bal d'afrique": '熱帶爵士',
             'la tulipe': '鬱金香',
             'super cedar': '北國之春',
             'young rose': '初生玫瑰',
             'mixed emotions': '迷式異彩',
             'eyes closed': '無型之形',
-            'santal 33': '檀香 33',
-            'another 13': '別樣 13',
-            'the noir 29': '黑茶 29',
-            'thé noir 29': '黑茶 29',
-            'rose 31': '玫瑰 31',
-            'bergamote 22': '佛手柑 22',
-            'the matcha 26': '抹茶 26',
-            'thé matcha 26': '抹茶 26',
-            'lavande 31': '薰衣草 31',
-            'gaiac 10': '癒創木 10',
-            'baie 19': '樹果 19',
+            'inflorescence': '春宴',
+            'bibliotheque': '懷舊書香',
+            'bibliothèque': '懷舊書香',
+            'desert dawn': '荒漠旭日',
+            'animalique': '原性覺醒',
+            'de los santos': '德洛斯桑托斯',
+            'mumbai noise': '孟買回響',
+            // Aesop
             'tacit': '悟香水',
             'hwyl': '熾香水',
             'marrakech intense': '馬拉喀什馥郁',
@@ -631,10 +684,14 @@
             'gloam': '格歐姆',
             'urano': '烏拉諾',
             'virere': '蔚香水',
+            'virēre': '蔚香水',
+            // Nishane
             'wulong cha': '烏龍茶',
             'hacivat': '哈西瓦特',
             'ani': '阿尼',
             'hundred silent ways': '百無聊賴',
+            'egoisto': '自私',
+            // Tom Ford
             'oud wood': '神秘東方（烏木）',
             'white suede': '白麝香',
             'rose prick': '荊棘玫瑰',
@@ -647,6 +704,10 @@
             'neroli portofino': '暖陽橙花',
             'ebene fume': '雪松秘境',
             'ébène fumé': '雪松秘境',
+            'cafe rose': '咖啡玫瑰',
+            'café rose': '咖啡玫瑰',
+            'ombre leather': '神秘曠野',
+            // Chanel / Dior / Hermes / Penhaligon's / MFK / Margiela / FM / Creed / Lutens
             'bleu de chanel': '藍色男性',
             'coco mademoiselle': '摩登COCO',
             'chance eau tendre': '粉紅甜蜜',
@@ -670,15 +731,21 @@
             'the tragedy of lord george': '公鹿（喬治勳爵的悲劇）',
             'the coveted duchess rose': '狐狸（玫瑰公爵夫人）',
             'changing constance': '羚羊（善變的康斯坦絲）',
+            'the blazing mr sam': '公牛（山姆先生）',
+            'much ado about the duke': '獵犬（公爵先生）',
             'halfeti': '黑玫瑰',
             'quercus': '皇家橡樹',
             'juniper sling': '琴酒',
             'savoy steam': '薩沃伊蒸汽',
+            'empressa': '廣霍之匣',
             'baccarat rouge 540': '水晶之燄 540',
             'aqua universalis': '永恆之水',
             'à la rose': '愛戀玫瑰',
             'a la rose': '愛戀玫瑰',
             "l'homme à la rose": '紳士玫瑰',
+            'petit matin': '晨曦',
+            'grand soir': '深宵',
+            '724': '724',
             'lazy sunday morning': '慵懶週末',
             'jazz club': '爵士酒廊',
             'by the fireplace': '壁爐火光',
@@ -690,6 +757,8 @@
             'coffee break': '咖啡小憩',
             'under the lemon trees': '檸檬樹下',
             'autumn vibes': '秋日微風',
+            'on a date': '微醺後',
+            'from the garden': '田園拾果',
             'portrait of a lady': '仕女肖像',
             'une rose': '一輪玫瑰',
             'rose tonnerre': '夜色玫瑰',
@@ -697,7 +766,8 @@
             'en passant': '紫丁香',
             "l'eau d'hiver": '冬之水',
             'carnal flower': '慾望之花',
-            'aventus': '拿破崙之水',
+            'french lover': '法國情人',
+            'aventus': '阿文圖斯（拿破崙之水）',
             'silver mountain water': '銀色山泉',
             'green irish tweed': '愛爾蘭之心',
             'millesime imperial': '皇室之水',
@@ -710,6 +780,39 @@
             'libre': '自由不羈',
             'black opium': '黑鴉片',
             'mon paris': '慾望巴黎'
+        };
+
+        // 常見機器直譯／非台灣專櫃譯名強制修正表
+        const NON_OFFICIAL_ZH_FIX_MAP = {
+            '另一個13': '別樣 13',
+            '另一個 13': '別樣 13',
+            '另一種13': '別樣 13',
+            '另一種 13': '別樣 13',
+            '檀木33': '檀香 33',
+            '檀木 33': '檀香 33',
+            '抹茶26': '末茶 26',
+            '抹茶 26': '末茶 26',
+            '癒創木10': '東京癒創木 10',
+            '癒創木 10': '東京癒創木 10',
+            '紅茶29': '黑茶 29',
+            '紅茶 29': '黑茶 29',
+            '英國梨和小蒼蘭': '英國梨與小蒼蘭',
+            '海鹽與鼠尾草': '鼠尾草與海鹽',
+            '木質鼠尾草與海鹽': '鼠尾草與海鹽',
+            '野生藍風鈴': '藍風鈴',
+            '野藍風鈴': '藍風鈴',
+            '皮膚之花': '肌膚之華',
+            '水中之影': '影中之水',
+            '水中的影子': '影中之水',
+            '奧費恩': '爵夢',
+            '奧菲恩': '爵夢',
+            '無花果哲學': '希臘無花果',
+            '白色浪漫': '返璞歸真',
+            '荒漠孤魂': '莫哈維之影',
+            '非洲之旅': '熱帶爵士',
+            '超級雪松': '北國之春',
+            '週日早晨': '慵懶週末',
+            '火爐旁': '壁爐火光'
         };
 
         function getFamilyStyle(familyStr) {
@@ -777,6 +880,70 @@
                 return [];
             },
 
+            // 自動轉換或從前中後調推導台灣正體中文「主香調」，確保 100% 不會空白
+            inferFragranceFamily(rawFamily, topNotes, midNotes, baseNotes, nameStr) {
+                let fam = String(rawFamily || '').trim();
+                const lowerFam = fam.toLowerCase();
+
+                if (fam && this.hasChinese(fam)) {
+                    if (!fam.endsWith('調')) fam = fam + '調';
+                    return fam;
+                }
+
+                // 若原資料主香調為英文，轉為台灣正體中文主香調
+                if (lowerFam) {
+                    if (lowerFam.includes('wood') && lowerFam.includes('floral')) return '木質花香調';
+                    if (lowerFam.includes('floral') && (lowerFam.includes('fruit') || lowerFam.includes('fruity'))) return '花香果香調';
+                    if (lowerFam.includes('citrus') && lowerFam.includes('wood')) return '柑橘木質調';
+                    if (lowerFam.includes('wood') || lowerFam.includes('cedar') || lowerFam.includes('sandal') || lowerFam.includes('vetiver')) return '木質調';
+                    if (lowerFam.includes('floral') || lowerFam.includes('flower') || lowerFam.includes('rose')) return '花香調';
+                    if (lowerFam.includes('citrus') || lowerFam.includes('fresh')) return '柑橘調';
+                    if (lowerFam.includes('fruit') || lowerFam.includes('fruity')) return '果香調';
+                    if (lowerFam.includes('green') || lowerFam.includes('aromatic') || lowerFam.includes('herbal') || lowerFam.includes('fougere') || lowerFam.includes('chypre')) return '草本綠葉調';
+                    if (lowerFam.includes('musk')) return '麝香調';
+                    if (lowerFam.includes('amber') || lowerFam.includes('oriental') || lowerFam.includes('spicy') || lowerFam.includes('warm')) return '東方調';
+                    if (lowerFam.includes('aquatic') || lowerFam.includes('marine') || lowerFam.includes('water') || lowerFam.includes('ozonic')) return '水生調';
+                    if (lowerFam.includes('leather')) return '皮革調';
+                    if (lowerFam.includes('gourmand') || lowerFam.includes('sweet') || lowerFam.includes('vanilla')) return '美食調';
+                }
+
+                // 若原資料完全沒有 family 欄位，自動從香材與名稱推算主香調
+                const allNotesStr = [
+                    ...this.ensureArray(topNotes),
+                    ...this.ensureArray(midNotes),
+                    ...this.ensureArray(baseNotes),
+                    String(nameStr || '')
+                ].join(' ').toLowerCase();
+
+                const hasWood = /檀香|雪松|癒創木|岩蘭草|香根草|烏木|沉香|柏|廣藿香|橡苔|木|紙莎草|龍涎酮|降龍涎香醚|santal|cedar|vetiver|oud|wood|hinoki|patchouli/.test(allNotesStr);
+                const hasFloral = /玫瑰|茉莉|小蒼蘭|橙花|晚香玉|牡丹|藍風鈴|風鈴草|依蘭|鳶尾|紫羅蘭|百合|桂花|木蘭|鈴蘭|花|rose|jasmine|freesia|neroli|tuberose|peony|iris|floral/.test(allNotesStr);
+                const hasCitrus = /佛手柑|香檸檬|檸檬|柑橘|苦橙|青檸|萊姆|葡萄柚|柚|香櫞|橘|bergamot|lemon|mandarin|orange|lime|grapefruit|citrus|yuzu/.test(allNotesStr);
+                const hasFruity = /英國梨|梨|黑莓|蜜桃|桃|無花果|蘋果|櫻桃|黑醋栗|漿果|果|pear|blackberry|peach|fig|cherry|apple/.test(allNotesStr);
+                const hasGreenTea = /茶|烏龍|抹茶|末茶|羅勒|鼠尾草|迷迭香|薄荷|綠葉|草|松|杜松|苦艾|tea|matcha|sage|basil|mint|green/.test(allNotesStr);
+                const hasMusk = /麝香|黃葵|醛|皂|musk|ambrette|aldehyde/.test(allNotesStr);
+                const hasAquatic = /海鹽|海洋|水|海藻|雨|sea|salt|marine|aquatic|water/.test(allNotesStr);
+                const hasLeather = /皮革|麂皮|絨皮|樺木|菸草|leather|suede|tobacco/.test(allNotesStr);
+                const hasGourmand = /香草|焦糖|巧克力|咖啡|蜂蜜|杏仁|奶油|糖|vanilla|coffee|honey|caramel/.test(allNotesStr);
+                const hasOriental = /沒藥|乳香|琥珀|零陵香豆|東加豆|安息香|勞丹脂|肉桂|豆蔻|焚香|amber|myrrh|tonka|incense/.test(allNotesStr);
+
+                if (hasLeather) return '皮革調';
+                if (hasAquatic) return '水生調';
+                if (hasGreenTea && !hasFloral) return '草本綠葉調';
+                if (hasWood && hasFloral) return '木質花香調';
+                if (hasFloral && hasFruity) return '花香果香調';
+                if (hasCitrus && hasWood) return '柑橘木質調';
+                if (hasGourmand && !hasCitrus) return '美食調';
+                if (hasOriental && !hasFloral) return '東方調';
+                if (hasWood) return '木質調';
+                if (hasFloral) return '花香調';
+                if (hasCitrus) return '柑橘調';
+                if (hasFruity) return '果香調';
+                if (hasMusk) return '麝香調';
+                if (hasGreenTea) return '草本綠葉調';
+                if (hasOriental) return '東方調';
+                return '木質調';
+            },
+
             normalizeBrandName(rawBrand) {
                 if (!rawBrand) return '';
                 let cleaned = String(rawBrand).trim();
@@ -801,13 +968,48 @@
                 return lower ? [lower] : [];
             },
 
-            buildBilingualPerfumeName(rawZh, rawEn, rawName, aliases) {
-                let zhPart = String(rawZh || '').trim();
-                let enPart = String(rawEn || '').trim();
-                const baseName = String(rawName || '').trim();
+            cleanNonOfficialZh(str) {
+                let s = String(str || '').trim();
+                if (!s) return '';
+                for (const [badZh, officialZh] of Object.entries(NON_OFFICIAL_ZH_FIX_MAP)) {
+                    if (s === badZh || s.includes(badZh)) {
+                        s = s.replace(badZh, officialZh);
+                    }
+                }
+                return s.trim();
+            },
 
-                if (this.hasBothZhAndEn(baseName) && !zhPart && !enPart) {
-                    return baseName;
+            lookupOfficialTaiwanZhByEn(enStr) {
+                const cleanEn = String(enStr || '').trim();
+                if (!cleanEn) return '';
+                const lowerKey = cleanEn.toLowerCase();
+                if (BUILTIN_PERFUME_ZH_MAP[lowerKey]) {
+                    return BUILTIN_PERFUME_ZH_MAP[lowerKey];
+                }
+                const normEn = this.normalizeSearchToken(cleanEn);
+                if (!normEn) return '';
+                const mapEntries = Object.entries(BUILTIN_PERFUME_ZH_MAP);
+                for (let i = 0; i < mapEntries.length; i++) {
+                    if (this.normalizeSearchToken(mapEntries[i][0]) === normEn) {
+                        return mapEntries[i][1];
+                    }
+                }
+                return '';
+            },
+
+            buildBilingualPerfumeName(rawZh, rawEn, rawName, aliases) {
+                let zhPart = this.cleanNonOfficialZh(rawZh);
+                let enPart = String(rawEn || '').trim();
+                const baseName = this.cleanNonOfficialZh(rawName);
+
+                // 若 baseName 同時含中英文（例如舊快取的 "另一個13 Another 13"），拆出英文部分重新核對台灣官方譯名
+                if (this.hasBothZhAndEn(baseName) && !enPart) {
+                    const enMatch = baseName.match(/[A-Za-z][A-Za-z0-9\s&'’.,\-°/]*$/);
+                    if (enMatch) {
+                        enPart = enMatch[0].trim();
+                        const zhPrefix = baseName.slice(0, baseName.length - enMatch[0].length).trim();
+                        if (!zhPart && zhPrefix) zhPart = this.cleanNonOfficialZh(zhPrefix);
+                    }
                 }
 
                 if (!zhPart && this.hasChinese(baseName) && !this.hasEnglish(baseName)) {
@@ -819,33 +1021,26 @@
 
                 if (Array.isArray(aliases)) {
                     for (let i = 0; i < aliases.length; i++) {
-                        const cleanA = String(aliases[i] || '').trim();
+                        const cleanA = this.cleanNonOfficialZh(aliases[i]);
                         if (!cleanA) continue;
-                        if (!zhPart && this.hasChinese(cleanA)) zhPart = cleanA;
                         if (!enPart && this.hasEnglish(cleanA) && !this.hasChinese(cleanA)) enPart = cleanA;
+                        if (!zhPart && this.hasChinese(cleanA) && !this.hasEnglish(cleanA)) zhPart = cleanA;
                     }
                 }
 
-                if (!zhPart && enPart) {
-                    const key = enPart.toLowerCase().trim();
-                    if (BUILTIN_PERFUME_ZH_MAP[key]) {
-                        zhPart = BUILTIN_PERFUME_ZH_MAP[key];
-                    } else {
-                        const normEn = this.normalizeSearchToken(enPart);
-                        const mapEntries = Object.entries(BUILTIN_PERFUME_ZH_MAP);
-                        for (let i = 0; i < mapEntries.length; i++) {
-                            if (this.normalizeSearchToken(mapEntries[i][0]) === normEn) {
-                                zhPart = mapEntries[i][1];
-                                break;
-                            }
-                        }
+                // 【強制最高優先級】只要英文名稱在內建「台灣專櫃／台灣總代理譯名字典」中，一律強制採用台灣官方譯名，覆蓋任何機器直譯
+                if (enPart) {
+                    const officialTwZh = this.lookupOfficialTaiwanZhByEn(enPart);
+                    if (officialTwZh) {
+                        zhPart = officialTwZh;
                     }
                 }
 
                 if (!enPart && zhPart) {
                     const entries = Object.entries(BUILTIN_PERFUME_ZH_MAP);
                     for (let i = 0; i < entries.length; i++) {
-                        if (entries[i][1] === zhPart) {
+                        if (entries[i][1] === zhPart || this.normalizeSearchToken(entries[i][1]) === this.normalizeSearchToken(zhPart)) {
+                            zhPart = entries[i][1];
                             enPart = entries[i][0].replace(/\b\w/g, c => c.toUpperCase());
                             break;
                         }
@@ -853,8 +1048,7 @@
                 }
 
                 if (zhPart && enPart) {
-                    if (enPart.includes(zhPart)) return enPart;
-                    if (zhPart.includes(enPart)) return zhPart;
+                    if (enPart.toLowerCase() === zhPart.toLowerCase()) return enPart;
                     return zhPart + ' ' + enPart;
                 }
                 return zhPart || enPart || baseName;
@@ -862,13 +1056,20 @@
 
             upsertCatalogItem(itemData, isInitial) {
                 const cleanBrand = this.normalizeBrandName(itemData.brand);
-                const cleanName = String(itemData.name || '').trim();
+                const cleanName = this.buildBilingualPerfumeName(itemData.name_zh, itemData.name_en, itemData.name, itemData.aliases);
                 if (!cleanBrand || !cleanName) return null;
+
+                const topArr = this.ensureArray(itemData.topNotes);
+                const midArr = this.ensureArray(itemData.midNotes);
+                const baseArr = this.ensureArray(itemData.baseNotes);
+                const rawFam = itemData.family || itemData.mainAccord || (Array.isArray(itemData.accords) ? itemData.accords[0] : '') || itemData.category || '';
+                const resolvedFamily = this.inferFragranceFamily(rawFam, topArr, midArr, baseArr, cleanName);
 
                 const brandAliases = this.getBrandAliases(cleanBrand);
                 const rawKeys = [
                     cleanBrand,
                     cleanName,
+                    itemData.name,
                     ...brandAliases,
                     ...(Array.isArray(itemData.searchKeywords) ? itemData.searchKeywords : []),
                     ...(Array.isArray(itemData.aliases) ? itemData.aliases : [])
@@ -894,15 +1095,14 @@
 
                 if (existingIdx !== -1) {
                     const existing = FRAGRANCE_CATALOG[existingIdx];
-                    if (this.hasBothZhAndEn(cleanName) && !this.hasBothZhAndEn(existing.name)) {
+                    if (this.hasBothZhAndEn(cleanName)) {
                         existing.name = cleanName;
                     }
                     existing.searchKeywords = Array.from(new Set([...(existing.searchKeywords || []), ...uniqueKeys]));
                     if (itemData.concentration && !existing.concentration) existing.concentration = itemData.concentration;
-                    if (itemData.family && !existing.family) existing.family = itemData.family;
-                    const topArr = this.ensureArray(itemData.topNotes);
-                    const midArr = this.ensureArray(itemData.midNotes);
-                    const baseArr = this.ensureArray(itemData.baseNotes);
+                    if (!existing.family || !this.hasChinese(existing.family)) {
+                        existing.family = resolvedFamily;
+                    }
                     if (topArr.length > 0 && (!existing.topNotes || existing.topNotes.length === 0)) existing.topNotes = topArr;
                     if (midArr.length > 0 && (!existing.midNotes || existing.midNotes.length === 0)) existing.midNotes = midArr;
                     if (baseArr.length > 0 && (!existing.baseNotes || existing.baseNotes.length === 0)) existing.baseNotes = baseArr;
@@ -916,10 +1116,10 @@
                         name: cleanName,
                         searchKeywords: uniqueKeys,
                         concentration: itemData.concentration || 'EDP 淡香精',
-                        family: itemData.family || '',
-                        topNotes: this.ensureArray(itemData.topNotes),
-                        midNotes: this.ensureArray(itemData.midNotes),
-                        baseNotes: this.ensureArray(itemData.baseNotes)
+                        family: resolvedFamily,
+                        topNotes: topArr,
+                        midNotes: midArr,
+                        baseNotes: baseArr
                     };
                     FRAGRANCE_CATALOG.push(newEntry);
                     if (isInitial) {
@@ -968,16 +1168,22 @@
                             
                             const displayBrand = this.normalizeBrandName(brandEn || brandZh);
                             const displayName = this.buildBilingualPerfumeName(nameZh, nameEn, item.name, item.aliases);
+                            const topArr = item.notes?.top || item.topNotes || [];
+                            const midArr = item.notes?.heart || item.notes?.middle || item.midNotes || [];
+                            const baseArr = item.notes?.base || item.baseNotes || [];
+                            const rawFam = item.family || item.mainAccord || (Array.isArray(item.accords) ? item.accords[0] : '') || item.category || '';
                             
                             this.upsertCatalogItem({
                                 brand: displayBrand,
                                 name: displayName,
+                                name_zh: nameZh,
+                                name_en: nameEn,
                                 aliases: [brandZh, brandEn, nameZh, nameEn, item.name, ...(Array.isArray(item.aliases) ? item.aliases : [])].filter(Boolean),
                                 concentration: item.concentration || 'EDP 淡香精',
-                                family: item.family || '',
-                                topNotes: item.notes?.top || item.topNotes || [],
-                                midNotes: item.notes?.heart || item.midNotes || [],
-                                baseNotes: item.notes?.base || item.baseNotes || []
+                                family: this.inferFragranceFamily(rawFam, topArr, midArr, baseArr, displayName),
+                                topNotes: topArr,
+                                midNotes: midArr,
+                                baseNotes: baseArr
                             }, true);
                         });
                     }
@@ -993,7 +1199,7 @@
                             name: cleanName,
                             aliases: [p.brand, p.name].filter(Boolean),
                             concentration: p.concentration,
-                            family: p.family,
+                            family: this.inferFragranceFamily(p.family, p.topNotes, p.midNotes, p.baseNotes, cleanName),
                             topNotes: p.topNotes,
                             midNotes: p.midNotes,
                             baseNotes: p.baseNotes
@@ -1088,21 +1294,36 @@
                     const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
                     const rawPerfumes = savedPerfumes ? JSON.parse(savedPerfumes) : [];
                     const rawLogs = savedLogs ? JSON.parse(savedLogs) : [];
+                    let modified = false;
 
                     if (Array.isArray(rawPerfumes)) {
-                        this.perfumes = rawPerfumes.filter(p => p && typeof p === 'object').map(p => ({
-                            ...p,
-                            id: p.id || ('p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
-                            brand: this.normalizeBrandName(p.brand || ''),
-                            name: this.buildBilingualPerfumeName('', '', p.name || '', []),
-                            concentration: String(p.concentration || ''),
-                            family: String(p.family || ''),
-                            topNotes: this.ensureArray(p.topNotes),
-                            midNotes: this.ensureArray(p.midNotes),
-                            baseNotes: this.ensureArray(p.baseNotes),
-                            status: p.status || 'owned',
-                            wornCount: Number(p.wornCount) || 0
-                        }));
+                        this.perfumes = rawPerfumes.filter(p => p && typeof p === 'object').map(p => {
+                            const topArr = this.ensureArray(p.topNotes);
+                            const midArr = this.ensureArray(p.midNotes);
+                            const baseArr = this.ensureArray(p.baseNotes);
+                            const normBrand = this.normalizeBrandName(p.brand || '');
+                            const normName = this.buildBilingualPerfumeName('', '', p.name || '', []);
+                            const normFamily = this.inferFragranceFamily(p.family, topArr, midArr, baseArr, normName);
+                            if (normBrand !== p.brand || normName !== p.name || normFamily !== p.family) {
+                                modified = true;
+                            }
+                            return {
+                                ...p,
+                                id: p.id || ('p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+                                brand: normBrand,
+                                name: normName,
+                                concentration: String(p.concentration || 'EDP 淡香精'),
+                                family: normFamily,
+                                topNotes: topArr,
+                                midNotes: midArr,
+                                baseNotes: baseArr,
+                                status: p.status || 'owned',
+                                wornCount: Number(p.wornCount) || 0
+                            };
+                        });
+                        if (modified) {
+                            this.savePerfumesToStorage();
+                        }
                     } else {
                         this.perfumes = [];
                     }
@@ -1255,7 +1476,7 @@
                 const item = this.currentSuggestions[idx];
                 if (!item) return;
                 this.fillFragranceFields(item);
-                this.showLookupStatus('已從候選清單帶入「' + item.brand + ' - ' + item.name + '」的濃度與前中後調', false);
+                this.showLookupStatus('已從候選清單帶入「' + item.brand + ' - ' + item.name + '」的主香調与前中後調', false);
             },
 
             getLocalBrandMatches(brandStr) {
@@ -1291,6 +1512,8 @@
                     const seenNames = new Set();
                     for (let i = 0; i < sortedLocal.length; i++) {
                         const m = sortedLocal[i];
+                        m.name = this.buildBilingualPerfumeName('', '', m.name, m.searchKeywords);
+                        m.family = this.inferFragranceFamily(m.family, m.topNotes, m.midNotes, m.baseNotes, m.name);
                         const key = m.name.toLowerCase();
                         if (!seenNames.has(key)) {
                             seenNames.add(key);
@@ -1316,10 +1539,10 @@
                 
                 const prompt = '請列出香水品牌「' + canonicalBrand + '」最知名、最熱門的 5 款代表性香水及其完整香調表。\n' +
                 '【嚴格規定】\n' +
-                '1. name_zh 必填：該香水的「台灣正體中文譯名」（僅限中文，禁止包含英文）。\n' +
-                '2. name_en 必填：該香水的「官方英文原名」（僅限英文，禁止包含中文）。\n' +
+                '1. name_zh 必填：必須使用「台灣百貨專櫃、台灣官方或台灣總代理（如迷香人、10/10 APOTHECARY、席哈諾）正式通行的台灣中文譯名」（例如 Another 13 必須是「別樣 13」，禁止翻成「另一個 13」；Blanche 必須是「返璞歸真」）。僅限繁體中文，禁止含英文。\n' +
+                '2. name_en 必填：該香水的「官方英文原名」（僅限英文，禁止含中文）。\n' +
                 '3. brand 必填：官方標準英文品牌名（禁止包含代理商字眼）。\n' +
-                '4. family 與 topNotes、midNotes、baseNotes 必須全部使用「台灣正體中文」。\n' +
+                '4. family（主香調，如：木質調、花香調、木質花香調、柑橘調、麝香調、東方調等）與 topNotes、midNotes、baseNotes 必填且必須全部使用「台灣正體中文」。\n' +
                 '5. 只回傳純 JSON 陣列。';
 
                 const payload = {
@@ -1371,9 +1594,11 @@
                                     const savedEntry = this.upsertCatalogItem({
                                         brand: cleanBrand,
                                         name: combinedName,
+                                        name_zh: item.name_zh,
+                                        name_en: item.name_en,
                                         aliases: [item.name_zh, item.name_en, rawBrand, cleanBrand].filter(Boolean),
                                         concentration: item.concentration,
-                                        family: item.family,
+                                        family: this.inferFragranceFamily(item.family, item.topNotes, item.midNotes, item.baseNotes, combinedName),
                                         topNotes: item.topNotes || [],
                                         midNotes: item.midNotes || [],
                                         baseNotes: item.baseNotes || []
@@ -1394,7 +1619,6 @@
                     throw new Error('Empty list or JSON parse failed');
                 } catch (e) {
                     console.error("熱門清單檢索錯誤:", e);
-                    // 第三階段：AI 也找不到，引導手動輸入
                     this.showLookupStatus('本機資料庫與 AI 皆找不到「' + canonicalBrand + '」的香水資料，請在下方手動輸入', false);
                     document.getElementById('form-name').focus();
                     return false;
@@ -1402,11 +1626,19 @@
             },
 
             fillFragranceFields(data) {
-                if (data.brand) document.getElementById('form-brand').value = this.normalizeBrandName(data.brand);
-                if (data.name) document.getElementById('form-name').value = this.buildBilingualPerfumeName('', '', data.name, []);
+                if (!data) return;
+                const cleanBrand = this.normalizeBrandName(data.brand || document.getElementById('form-brand').value);
+                const cleanName = this.buildBilingualPerfumeName(data.name_zh, data.name_en, data.name, data.searchKeywords);
+                const topArr = this.ensureArray(data.topNotes);
+                const midArr = this.ensureArray(data.midNotes);
+                const baseArr = this.ensureArray(data.baseNotes);
+                const resolvedFamily = this.inferFragranceFamily(data.family, topArr, midArr, baseArr, cleanName);
+
+                document.getElementById('form-brand').value = cleanBrand;
+                document.getElementById('form-name').value = cleanName;
                 
+                const concSelect = document.getElementById('form-concentration');
                 if (data.concentration) {
-                    const concSelect = document.getElementById('form-concentration');
                     const options = Array.from(concSelect.options).map(o => o.value);
                     if (options.includes(data.concentration)) {
                         concSelect.value = data.concentration;
@@ -1417,16 +1649,18 @@
                         else if (upper.includes('PARFUM') && !upper.includes('EDP')) concSelect.value = "Parfum 香精";
                         else concSelect.value = "EDP 淡香精";
                     }
+                } else {
+                    concSelect.value = "EDP 淡香精";
                 }
                 
-                if (data.family) {
-                    const familyInput = document.getElementById('form-family');
-                    if (familyInput) familyInput.value = data.family;
+                const familyInput = document.getElementById('form-family');
+                if (familyInput) {
+                    familyInput.value = resolvedFamily;
                 }
                 
-                if (Array.isArray(data.topNotes)) document.getElementById('form-top-notes').value = data.topNotes.join('、');
-                if (Array.isArray(data.midNotes)) document.getElementById('form-mid-notes').value = data.midNotes.join('、');
-                if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
+                document.getElementById('form-top-notes').value = topArr.join('、');
+                document.getElementById('form-mid-notes').value = midArr.join('、');
+                document.getElementById('form-base-notes').value = baseArr.join('、');
             },
 
             showLookupStatus(msg, isLoading) {
@@ -1444,8 +1678,9 @@
                 const normBrand = canonicalBrand.toLowerCase();
                 const normBrandToken = this.normalizeSearchToken(canonicalBrand);
                 const brandAliases = this.getBrandAliases(canonicalBrand);
-                const normName = String(nameStr || '').trim().toLowerCase();
-                const normNameToken = this.normalizeSearchToken(nameStr);
+                const cleanedInputName = this.cleanNonOfficialZh(nameStr);
+                const normName = String(cleanedInputName || '').trim().toLowerCase();
+                const normNameToken = this.normalizeSearchToken(cleanedInputName);
                 if (!normName) return null;
 
                 const matchItemName = (item) => {
@@ -1469,7 +1704,6 @@
                     });
                 };
 
-                // 1. 優先比對：品牌與名稱皆符合
                 const strictCandidates = FRAGRANCE_CATALOG.filter(item => {
                     const itemBrandLower = item.brand.toLowerCase();
                     const itemBrandToken = this.normalizeSearchToken(item.brand);
@@ -1489,7 +1723,6 @@
                     return bilingual || strictCandidates[0];
                 }
 
-                // 2. 寬鬆比對：若使用者品牌拼寫微幅差異，但香水名稱完全命中本機資料庫
                 if (normNameToken.length >= 3) {
                     const nameOnlyCandidates = FRAGRANCE_CATALOG.filter(item => matchItemName(item));
                     if (nameOnlyCandidates.length > 0) {
@@ -1516,21 +1749,23 @@
                 }
                 document.getElementById('brand-custom-list').classList.add('hidden');
 
-                // 情況 A：只填品牌、沒填香水名稱 -> 先從本機資料庫抓 5 個候選，本機完全沒有才找 AI
+                // 情況 A：只填品牌、沒填香水名稱 -> 先從本機資料庫抓 5 個候選，本機沒有才找 AI
                 if (brand && !rawName) {
                     return await this.fetchBrandSuggestionsWithFallback(brand);
                 }
 
-                // 情況 B：有填香水名稱 -> 【第一階段】嚴格先搜尋本機資料庫 (fragrances.json 與已存紀錄)
+                // 情況 B：有填香水名稱 -> 【第一階段】優先搜尋本機資料庫
                 const localMatch = this.findLocalMatch(brand, rawName);
 
                 if (localMatch) {
+                    localMatch.name = this.buildBilingualPerfumeName('', '', localMatch.name, localMatch.searchKeywords);
+                    localMatch.family = this.inferFragranceFamily(localMatch.family, localMatch.topNotes, localMatch.midNotes, localMatch.baseNotes, localMatch.name);
                     this.fillFragranceFields(localMatch);
                     this.showLookupStatus('已從本機資料庫成功帶入「' + localMatch.brand + ' - ' + localMatch.name + '」', false);
                     return true;
                 }
 
-                // 【第二階段】本機資料庫完全找不到，才去問 AI
+                // 【第二階段】本機資料庫完全找不到，才呼叫 AI
                 const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
                 if (!apiKey) {
                     this.showLookupStatus('本機資料庫無此香水（未設定 AI 金鑰），請直接在下方手動輸入香調', false);
@@ -1545,10 +1780,10 @@
                 const prompt = '使用者輸入了品牌「' + (brand || '未知') + '」與香水名稱「' + rawName + '」。請尋找該真實存在的香水資訊。\n' +
                 '【嚴格規定】\n' +
                 '1. 若真實世界存在此香水，found 設為 true；若根本查無此香水，found 設為 false。\n' +
-                '2. name_zh 必填：該香水的「台灣正體中文譯名」（僅限繁體中文，不可含英文）。\n' +
+                '2. name_zh 必填：必須使用「台灣百貨專櫃、台灣官方或台灣總代理（如迷香人、10/10 APOTHECARY、席哈諾）正式通行的台灣中文譯名」（例如 Another 13 必須是「別樣 13」，嚴禁字面直譯為「另一個 13」）。僅限繁體中文，不可含英文。\n' +
                 '3. name_en 必填：該香水的「官方英文原名」（僅限英文，不可含中文）。\n' +
                 '4. brand 必填：官方標準品牌名（禁止包含代理商字眼）。\n' +
-                '5. concentration、family 與 topNotes、midNotes、baseNotes（前中後調香材）一律使用「台灣正體中文」。\n' +
+                '5. concentration、family（主香調，必填，如：木質調、花香調、木質花香調、柑橘調、麝香調、東方調等）與 topNotes、midNotes、baseNotes（前中後調香材）一律使用「台灣正體中文」。\n' +
                 '6. 只回傳純 JSON 物件。';
 
                 const payload = {
@@ -1597,9 +1832,11 @@
                             const savedEntry = this.upsertCatalogItem({
                                 brand: cleanBrand,
                                 name: combinedName,
+                                name_zh: data.name_zh,
+                                name_en: data.name_en,
                                 aliases: [rawBrand, rawName, data.name_zh, data.name_en, cleanBrand].filter(Boolean),
                                 concentration: data.concentration,
-                                family: data.family,
+                                family: this.inferFragranceFamily(data.family, data.topNotes, data.midNotes, data.baseNotes, combinedName),
                                 topNotes: data.topNotes || [],
                                 midNotes: data.midNotes || [],
                                 baseNotes: data.baseNotes || []
@@ -1950,7 +2187,7 @@
                     document.getElementById('form-brand').value = p.brand || '';
                     document.getElementById('form-name').value = p.name || '';
                     document.getElementById('form-concentration').value = p.concentration || '';
-                    document.getElementById('form-family').value = p.family || '';
+                    document.getElementById('form-family').value = this.inferFragranceFamily(p.family, p.topNotes, p.midNotes, p.baseNotes, p.name);
                     document.getElementById('form-top-notes').value = this.ensureArray(p.topNotes).join('、');
                     document.getElementById('form-mid-notes').value = this.ensureArray(p.midNotes).join('、');
                     document.getElementById('form-base-notes').value = this.ensureArray(p.baseNotes).join('、');
@@ -1984,10 +2221,9 @@
                 const brand = this.normalizeBrandName(document.getElementById('form-brand').value.trim());
                 let name = this.buildBilingualPerfumeName('', '', document.getElementById('form-name').value.trim(), []);
 
-                // 先嘗試從本機資料庫自動補齊中英雙語名稱與未填的香調，絕不主動強制呼叫 AI 阻擋儲存
                 const localMatch = this.findLocalMatch(brand, name);
                 if (localMatch) {
-                    name = localMatch.name;
+                    name = this.buildBilingualPerfumeName('', '', localMatch.name, localMatch.searchKeywords);
                     if (!document.getElementById('form-concentration').value && localMatch.concentration) {
                         document.getElementById('form-concentration').value = localMatch.concentration;
                     }
@@ -2005,12 +2241,11 @@
                     }
                 }
 
-                const concentration = document.getElementById('form-concentration').value;
-                const family = document.getElementById('form-family').value;
-                
+                const concentration = document.getElementById('form-concentration').value || 'EDP 淡香精';
                 const topNotes = this.splitNotes(document.getElementById('form-top-notes').value);
                 const midNotes = this.splitNotes(document.getElementById('form-mid-notes').value);
                 const baseNotes = this.splitNotes(document.getElementById('form-base-notes').value);
+                const family = this.inferFragranceFamily(document.getElementById('form-family').value, topNotes, midNotes, baseNotes, name);
                 
                 const status = document.getElementById('form-status').value;
                 const volumeVal = document.getElementById('form-volume').value;
@@ -2444,14 +2679,21 @@
                     try {
                         const data = JSON.parse(e.target.result);
                         if (!Array.isArray(data.perfumes)) throw new Error('Invalid format');
-                        this.perfumes = data.perfumes.filter(p => p && typeof p === 'object').map(p => ({
-                            ...p,
-                            brand: this.normalizeBrandName(p.brand || ''),
-                            name: this.buildBilingualPerfumeName('', '', p.name || '', []),
-                            topNotes: this.ensureArray(p.topNotes),
-                            midNotes: this.ensureArray(p.midNotes),
-                            baseNotes: this.ensureArray(p.baseNotes)
-                        }));
+                        this.perfumes = data.perfumes.filter(p => p && typeof p === 'object').map(p => {
+                            const topArr = this.ensureArray(p.topNotes);
+                            const midArr = this.ensureArray(p.midNotes);
+                            const baseArr = this.ensureArray(p.baseNotes);
+                            const normName = this.buildBilingualPerfumeName('', '', p.name || '', []);
+                            return {
+                                ...p,
+                                brand: this.normalizeBrandName(p.brand || ''),
+                                name: normName,
+                                family: this.inferFragranceFamily(p.family, topArr, midArr, baseArr, normName),
+                                topNotes: topArr,
+                                midNotes: midArr,
+                                baseNotes: baseArr
+                            };
+                        });
                         this.logs = Array.isArray(data.logs) ? data.logs : [];
                         this.savePerfumesToStorage();
                         this.saveLogsToStorage();
