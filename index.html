@@ -604,7 +604,7 @@
                             
                             const allKeywords = [brandZh, brandEn, nameZh, nameEn, ...(item.aliases || [])]
                                 .filter(Boolean)
-                                .map(k => k.toLowerCase());
+                                .map(k => String(k).toLowerCase());
 
                             const exists = FRAGRANCE_CATALOG.some(c => 
                                 c.brand.toLowerCase() === displayBrand.toLowerCase() && 
@@ -946,7 +946,7 @@
                 const chipsContainer = document.getElementById('brand-suggestion-chips');
                 
                 if (items.length === 0) {
-                    chipsContainer.innerHTML = '<span class="text-[11px] text-muted py-1 bg-stone-100 px-2 rounded">本地尚無紀錄，點擊上方按鈕上網找尋</span>';
+                    chipsContainer.innerHTML = '<span class="text-[11px] text-muted py-1 bg-stone-100 px-2 rounded">本地尚無紀錄，可點擊上方按鈕上網搜尋</span>';
                 } else {
                     chipsContainer.innerHTML = items.map(m => `
                         <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all">
@@ -1020,22 +1020,22 @@
                                     const cleanBrand = this.normalizeBrandName(item.brand || brand);
                                     const cleanName = item.name.trim();
                                     
-                                    const exists = FRAGRANCE_CATALOG.some(c => 
-                                        c.brand.toLowerCase() === cleanBrand.toLowerCase() && 
-                                        c.name.toLowerCase() === cleanName.toLowerCase()
-                                    );
+                                    const existsTarget = FRAGRANCE_CATALOG.find(c => c.brand === cleanBrand && c.name === cleanName);
+                                    const newKeys = [brand, cleanBrand, item.brand, cleanName, item.name].filter(Boolean).map(k => String(k).toLowerCase());
                                     
-                                    if (!exists) {
+                                    if (!existsTarget) {
                                         FRAGRANCE_CATALOG.push({
                                             brand: cleanBrand,
                                             name: cleanName,
-                                            searchKeywords: [cleanBrand, cleanName, item.brand, item.name].filter(Boolean).map(k => String(k).toLowerCase()),
+                                            searchKeywords: [...new Set(newKeys)],
                                             concentration: item.concentration,
                                             family: item.family,
                                             topNotes: item.topNotes || [],
                                             midNotes: item.midNotes || [],
                                             baseNotes: item.baseNotes || []
                                         });
+                                    } else {
+                                        existsTarget.searchKeywords = [...new Set([...(existsTarget.searchKeywords || []), ...newKeys])];
                                     }
                                 });
                                 const normBrandFilter = brand.toLowerCase();
@@ -1182,6 +1182,26 @@
                             const data = JSON.parse(jsonMatch[0]);
                             
                             data.brand = this.normalizeBrandName(data.brand || brand);
+                            
+                            // 立即將中英雙語綁定存入字典，防止存檔時英文關鍵字遺失
+                            const existsTarget = FRAGRANCE_CATALOG.find(c => c.brand === data.brand && c.name === data.name);
+                            const newKeys = [brand, name, data.brand, data.name].filter(Boolean).map(k => String(k).toLowerCase());
+                            
+                            if (!existsTarget) {
+                                FRAGRANCE_CATALOG.push({
+                                    brand: data.brand,
+                                    name: data.name,
+                                    searchKeywords: [...new Set(newKeys)],
+                                    concentration: data.concentration,
+                                    family: data.family,
+                                    topNotes: data.topNotes || [],
+                                    midNotes: data.midNotes || [],
+                                    baseNotes: data.baseNotes || []
+                                });
+                            } else {
+                                existsTarget.searchKeywords = [...new Set([...(existsTarget.searchKeywords || []), ...newKeys])];
+                            }
+
                             this.fillFragranceFields(data);
                             this.showLookupStatus(`已透過線上 AI 找到並帶入正體中文香調表`, false);
                             return;
@@ -1570,11 +1590,6 @@
                 const purchaseLocation = status !== 'wishlist' ? locationVal : '';
 
                 let isNewToCatalog = false;
-                if (!id) {
-                    const normBrand = brand.toLowerCase();
-                    const normName = name.toLowerCase();
-                    isNewToCatalog = !FRAGRANCE_CATALOG.some(c => c.brand.toLowerCase() === normBrand && c.name.toLowerCase() === normName);
-                }
 
                 if (id) {
                     const idx = this.perfumes.findIndex(p => p.id === id);
@@ -1588,6 +1603,8 @@
                         this.showToast('已更新香水資料');
                     }
                 } else {
+                    const existingCatalog = FRAGRANCE_CATALOG.find(c => c.brand.toLowerCase() === brand.toLowerCase() && c.name.toLowerCase() === name.toLowerCase());
+                    
                     const newPerfume = {
                         id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
                         brand, name, concentration, family,
@@ -1597,9 +1614,13 @@
                         createdAt: new Date().toISOString()
                     };
                     this.perfumes.unshift(newPerfume);
-                    FRAGRANCE_CATALOG.push({
-                        brand, name, searchKeywords: [brand.toLowerCase(), name.toLowerCase()], concentration, family, topNotes, midNotes, baseNotes 
-                    });
+
+                    if (!existingCatalog) {
+                        isNewToCatalog = true;
+                        FRAGRANCE_CATALOG.push({
+                            brand, name, searchKeywords: [brand.toLowerCase(), name.toLowerCase()], concentration, family, topNotes, midNotes, baseNotes 
+                        });
+                    }
                     this.showToast('已新增香水紀錄');
                 }
 
