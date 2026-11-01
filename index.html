@@ -64,7 +64,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in {
-            animation: fadeIn 0.25s ease-out forwards;
+            animation: fadeIn 0.15s ease-out forwards;
         }
     </style>
 </head>
@@ -421,22 +421,41 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="relative">
+                        <!-- Custom Combobox for Brand -->
+                        <div class="relative" id="brand-dropdown-container">
                             <label class="block text-xs font-medium text-muted mb-1">品牌 (Brand) *</label>
-                            <input type="text" id="form-brand" list="brand-datalist" required 
-                                oninput="app.onBrandInput()" 
-                                onchange="app.onBrandOrNameBlur()"
-                                placeholder="雙擊展開選單，或直接輸入品牌..." 
-                                class="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
-                            <datalist id="brand-datalist"></datalist>
+                            <div class="relative">
+                                <input type="text" id="form-brand" autocomplete="off" required
+                                    oninput="app.onBrandInput()" 
+                                    onfocus="app.showBrandDropdown(false)"
+                                    onclick="app.showBrandDropdown(false)"
+                                    onchange="app.onBrandOrNameBlur()"
+                                    placeholder="直接輸入或選擇品牌..." 
+                                    class="w-full pl-3.5 pr-10 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
+                                <!-- 點擊此按鈕，無視文字過濾，直接展現所有選項 -->
+                                <button type="button" tabindex="-1" onclick="app.toggleBrandDropdown(event)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-muted hover:text-ink rounded-md hover:bg-stone-100 transition-colors">
+                                    <i class="ph ph-caret-down"></i>
+                                </button>
+                            </div>
+                            <ul id="brand-custom-list" class="hidden absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1 text-sm ring-1 ring-black/5"></ul>
                         </div>
-                        <div class="relative">
+
+                        <!-- Custom Combobox for Name -->
+                        <div class="relative" id="name-dropdown-container">
                             <label class="block text-xs font-medium text-muted mb-1">香水名稱 (Name) *</label>
-                            <input type="text" id="form-name" list="perfume-datalist" required 
-                                onchange="app.onBrandOrNameBlur()"
-                                placeholder="雙擊展開選單，或直接輸入香水..." 
-                                class="w-full px-3.5 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
-                            <datalist id="perfume-datalist"></datalist>
+                            <div class="relative">
+                                <input type="text" id="form-name" autocomplete="off" required
+                                    oninput="app.onNameInput()"
+                                    onfocus="app.showNameDropdown(false)"
+                                    onclick="app.showNameDropdown(false)"
+                                    onchange="app.onBrandOrNameBlur()"
+                                    placeholder="直接輸入或選擇香水..." 
+                                    class="w-full pl-3.5 pr-10 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
+                                <button type="button" tabindex="-1" onclick="app.toggleNameDropdown(event)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-muted hover:text-ink rounded-md hover:bg-stone-100 transition-colors">
+                                    <i class="ph ph-caret-down"></i>
+                                </button>
+                            </div>
+                            <ul id="name-custom-list" class="hidden absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1 text-sm ring-1 ring-black/5"></ul>
                         </div>
                     </div>
 
@@ -538,11 +557,8 @@
                     </div>
                 </div>
 
-                <!-- Submit & Cancel & Clear -->
+                <!-- Submit & Cancel (徹底移除快速清空按鈕，讓表單極簡化) -->
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-stone-200">
-                    <button type="button" onclick="app.clearPerfumeForm()" class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-ink text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 mr-auto">
-                        <i class="ph ph-trash"></i> 快速清空
-                    </button>
                     <button type="button" onclick="app.closePerfumeModal()" class="px-4 py-2 rounded-xl border border-stone-200 text-xs sm:text-sm text-muted hover:text-ink">
                         取消
                     </button>
@@ -681,21 +697,32 @@
             perfumes: [],
             logs: [],
             currentTab: 'wardrobe',
-            wardrobeMode: 'collection', // 'collection' (owned + sample), 'empties' (empty), or 'wishlist'
+            wardrobeMode: 'collection', 
             selectedFamily: 'all',
             isSearchOpen: false,
             isFilterOpen: false,
             brandDebounceTimer: null,
+            lastTypedBrand: '',
 
             init() {
                 this.setupPwaManifest();
                 this.loadFromStorage();
-                this.loadDatabase(); // 載入外部 JSON
-                this.populateBrandDatalist();
+                this.loadDatabase();
                 this.renderAll();
+
+                // 點擊表單外側時自動隱藏下拉選單
+                document.addEventListener('click', (e) => {
+                    const brandContainer = document.getElementById('brand-dropdown-container');
+                    if (brandContainer && !brandContainer.contains(e.target)) {
+                        document.getElementById('brand-custom-list').classList.add('hidden');
+                    }
+                    const nameContainer = document.getElementById('name-dropdown-container');
+                    if (nameContainer && !nameContainer.contains(e.target)) {
+                        document.getElementById('name-custom-list').classList.add('hidden');
+                    }
+                });
             },
 
-            // 讀取外部 JSON 資料庫，並強化防重複邏輯
             async loadDatabase() {
                 try {
                     const response = await fetch('./fragrances.json');
@@ -705,7 +732,6 @@
                             const normBrand = item.brand.toLowerCase();
                             const normName = item.name.toLowerCase();
                             
-                            // 防重複比對邏輯 (支援中英文互查與別名)
                             const exists = FRAGRANCE_CATALOG.some(c => {
                                 const cBrand = c.brand.toLowerCase();
                                 if (!cBrand.includes(normBrand) && !normBrand.includes(cBrand)) return false;
@@ -717,24 +743,19 @@
 
                             if (!exists) {
                                 FRAGRANCE_CATALOG.push({
-                                    brand: item.brand,
-                                    name: item.name,
-                                    aliases: item.aliases || [],
-                                    concentration: item.concentration || 'EDP 淡香精',
-                                    family: item.family || '', 
-                                    topNotes: item.notes?.top || [],
-                                    midNotes: item.notes?.heart || [],
-                                    baseNotes: item.notes?.base || []
+                                    brand: item.brand, name: item.name, aliases: item.aliases || [],
+                                    concentration: item.concentration || 'EDP 淡香精', family: item.family || '', 
+                                    topNotes: item.notes?.top || [], midNotes: item.notes?.heart || [], baseNotes: item.notes?.base || []
                                 });
                             }
                         });
-                        this.populateBrandDatalist();
                     }
                 } catch (e) {
                     console.log("未載入外部 fragrances.json，將直接使用內建資料庫");
                 }
             },
 
+            /* ==================== UI & TABS ==================== */
             switchTab(tabId) {
                 this.currentTab = tabId;
                 const sections = {
@@ -746,15 +767,11 @@
                 Object.keys(sections).forEach(key => {
                     const sec = sections[key];
                     if (sec) {
-                        if (key === tabId) {
-                            sec.classList.remove('hidden');
-                        } else {
-                            sec.classList.add('hidden');
-                        }
+                        if (key === tabId) { sec.classList.remove('hidden'); } 
+                        else { sec.classList.add('hidden'); }
                     }
                 });
 
-                // Update desktop nav buttons
                 const navButtons = {
                     'wardrobe': document.getElementById('nav-wardrobe'),
                     'sotd': document.getElementById('nav-sotd'),
@@ -763,15 +780,12 @@
                 Object.keys(navButtons).forEach(key => {
                     const btn = navButtons[key];
                     if (btn) {
-                        if (key === tabId) {
-                            btn.className = 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-ink text-paper shadow-sm';
-                        } else {
-                            btn.className = 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-muted hover:text-ink';
-                        }
+                        btn.className = key === tabId 
+                            ? 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-ink text-paper shadow-sm' 
+                            : 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-muted hover:text-ink';
                     }
                 });
 
-                // Update mobile nav buttons
                 const mobButtons = {
                     'wardrobe': document.getElementById('mob-nav-wardrobe'),
                     'sotd': document.getElementById('mob-nav-sotd'),
@@ -780,53 +794,36 @@
                 Object.keys(mobButtons).forEach(key => {
                     const btn = mobButtons[key];
                     if (btn) {
-                        if (key === tabId) {
-                            btn.className = 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-ink font-semibold';
-                        } else {
-                            btn.className = 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-muted';
-                        }
+                        btn.className = key === tabId 
+                            ? 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-ink font-semibold' 
+                            : 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-muted';
                     }
                 });
 
-                if (tabId === 'sotd') {
-                    this.renderSotdSection();
-                } else if (tabId === 'stats') {
-                    this.renderStatsSection();
-                }
+                if (tabId === 'sotd') { this.renderSotdSection(); } 
+                else if (tabId === 'stats') { this.renderStatsSection(); }
             },
 
             renderAll() {
                 this.updateWardrobeModeUI();
                 this.renderFamilyFilterBar();
                 this.renderWardrobe();
-                if (this.currentTab === 'sotd') {
-                    this.renderSotdSection();
-                } else if (this.currentTab === 'stats') {
-                    this.renderStatsSection();
-                }
+                if (this.currentTab === 'sotd') { this.renderSotdSection(); } 
+                else if (this.currentTab === 'stats') { this.renderStatsSection(); }
             },
 
             setupPwaManifest() {
                 try {
                     const manifest = {
-                        name: "ScentJournal 香氛圖鑑與穿香紀錄",
-                        short_name: "ScentJournal",
-                        start_url: ".",
-                        display: "standalone",
-                        background_color: "#FAF7F2",
-                        theme_color: "#1E1B18",
-                        icons: [
-                            {
-                                src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#1E1B18"/><rect x="74" y="30" width="44" height="22" rx="6" fill="#B58E58"/><rect x="50" y="60" width="92" height="102" rx="18" fill="#FAF7F2" stroke="#B58E58" stroke-width="6"/><rect x="68" y="84" width="56" height="54" rx="6" fill="#F2ECE1"/></svg>`),
-                                sizes: "192x192",
-                                type: "image/svg+xml"
-                            }
-                        ]
+                        name: "ScentJournal 香氛圖鑑與穿香紀錄", short_name: "ScentJournal", start_url: ".", display: "standalone",
+                        background_color: "#FAF7F2", theme_color: "#1E1B18",
+                        icons: [{
+                            src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#1E1B18"/><rect x="74" y="30" width="44" height="22" rx="6" fill="#B58E58"/><rect x="50" y="60" width="92" height="102" rx="18" fill="#FAF7F2" stroke="#B58E58" stroke-width="6"/><rect x="68" y="84" width="56" height="54" rx="6" fill="#F2ECE1"/></svg>`),
+                            sizes: "192x192", type: "image/svg+xml"
+                        }]
                     };
                     const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-                    const link = document.createElement('link');
-                    link.rel = 'manifest';
-                    link.href = URL.createObjectURL(blob);
+                    const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
                     document.head.appendChild(link);
                 } catch (e) {}
             },
@@ -838,26 +835,18 @@
                     this.perfumes = savedPerfumes ? JSON.parse(savedPerfumes) : [];
                     this.logs = savedLogs ? JSON.parse(savedLogs) : [];
                 } catch (e) {
-                    console.error('LocalStorage load error:', e);
-                    this.perfumes = [];
-                    this.logs = [];
+                    this.perfumes = []; this.logs = [];
                 }
             },
 
             savePerfumesToStorage() {
-                try {
-                    localStorage.setItem(STORAGE_KEYS.PERFUMES, JSON.stringify(this.perfumes));
-                } catch (e) {
-                    this.showToast('儲存失敗：瀏覽器空間可能已滿', 'error');
-                }
+                try { localStorage.setItem(STORAGE_KEYS.PERFUMES, JSON.stringify(this.perfumes)); } 
+                catch (e) { this.showToast('儲存失敗：瀏覽器空間可能已滿', 'error'); }
             },
 
             saveLogsToStorage() {
-                try {
-                    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(this.logs));
-                } catch (e) {
-                    this.showToast('日誌儲存失敗', 'error');
-                }
+                try { localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(this.logs)); } 
+                catch (e) { this.showToast('日誌儲存失敗', 'error'); }
             },
 
             openApiKeyModal() {
@@ -866,9 +855,7 @@
                 document.getElementById('api-key-modal').classList.remove('hidden');
             },
 
-            closeApiKeyModal() {
-                document.getElementById('api-key-modal').classList.add('hidden');
-            },
+            closeApiKeyModal() { document.getElementById('api-key-modal').classList.add('hidden'); },
 
             saveApiKey() {
                 const key = document.getElementById('input-api-key').value.trim();
@@ -877,33 +864,148 @@
                 this.showToast('API 金鑰已安全儲存於本機');
             },
 
-            /* ==================== AUTO-LOOKUP FRAGRANCE NOTES ==================== */
-            populateBrandDatalist() {
+            /* ==================== CUSTOM COMBOBOX: BRAND & NAME ==================== */
+            populateBrandDropdown(filterText = '') {
+                const listEl = document.getElementById('brand-custom-list');
                 const brands = [...new Set(FRAGRANCE_CATALOG.map(item => item.brand))];
-                const datalist = document.getElementById('brand-datalist');
-                if (datalist) {
-                    datalist.innerHTML = brands.map(b => `<option value="${b}">`).join('');
+                let filtered = brands;
+                if (filterText) {
+                    const norm = filterText.toLowerCase();
+                    filtered = brands.filter(b => b.toLowerCase().includes(norm));
+                }
+                
+                if (filtered.length === 0) {
+                    listEl.innerHTML = `<li class="px-3.5 py-2 text-muted text-xs">無相符品牌，可直接輸入建立新品牌</li>`;
+                } else {
+                    listEl.innerHTML = filtered.map(b => `
+                        <li class="px-3.5 py-2 hover:bg-goldLight/40 cursor-pointer text-ink transition-colors" onclick="app.selectBrand('${this.escapeHtml(b)}')">
+                            ${this.escapeHtml(b)}
+                        </li>
+                    `).join('');
                 }
             },
 
-            onBrandInput() {
-                const brandInput = document.getElementById('form-brand').value.trim();
-                const normBrand = brandInput.toLowerCase();
-                const perfumeDatalist = document.getElementById('perfume-datalist');
+            showBrandDropdown(showAll = false) {
+                const inputVal = showAll ? '' : document.getElementById('form-brand').value.trim();
+                this.populateBrandDropdown(inputVal);
+                document.getElementById('brand-custom-list').classList.remove('hidden');
+                document.getElementById('name-custom-list').classList.add('hidden');
+            },
+
+            toggleBrandDropdown(e) {
+                if (e) e.stopPropagation();
+                const listEl = document.getElementById('brand-custom-list');
+                if (listEl.classList.contains('hidden')) {
+                    this.showBrandDropdown(true); // 強制顯示全部
+                } else {
+                    listEl.classList.add('hidden');
+                }
+            },
+
+            selectBrand(brandStr) {
+                const inputEl = document.getElementById('form-brand');
+                inputEl.value = brandStr;
+                document.getElementById('brand-custom-list').classList.add('hidden');
+                this.onBrandInput(true);
+            },
+
+            populateNameDropdown(filterText = '') {
+                const listEl = document.getElementById('name-custom-list');
+                const currentBrand = document.getElementById('form-brand').value.trim().toLowerCase();
+                let availableNames = [];
+
+                if (currentBrand) {
+                    availableNames = FRAGRANCE_CATALOG
+                        .filter(c => c.brand.toLowerCase().includes(currentBrand) || currentBrand.includes(c.brand.toLowerCase()))
+                        .map(c => c.name);
+                } else {
+                    availableNames = [...new Set(FRAGRANCE_CATALOG.map(c => c.name))];
+                }
+
+                let filtered = availableNames;
+                if (filterText) {
+                    const norm = filterText.toLowerCase();
+                    filtered = availableNames.filter(n => n.toLowerCase().includes(norm));
+                }
+
+                if (filtered.length === 0) {
+                    listEl.innerHTML = `<li class="px-3.5 py-2 text-muted text-xs">無相符香水，可直接輸入建立新香水</li>`;
+                } else {
+                    listEl.innerHTML = filtered.map(n => `
+                        <li class="px-3.5 py-2 hover:bg-goldLight/40 cursor-pointer text-ink transition-colors" onclick="app.selectName('${this.escapeHtml(n)}')">
+                            ${this.escapeHtml(n)}
+                        </li>
+                    `).join('');
+                }
+            },
+
+            showNameDropdown(showAll = false) {
+                const inputVal = showAll ? '' : document.getElementById('form-name').value.trim();
+                this.populateNameDropdown(inputVal);
+                document.getElementById('name-custom-list').classList.remove('hidden');
+                document.getElementById('brand-custom-list').classList.add('hidden');
+            },
+
+            toggleNameDropdown(e) {
+                if (e) e.stopPropagation();
+                const listEl = document.getElementById('name-custom-list');
+                if (listEl.classList.contains('hidden')) {
+                    this.showNameDropdown(true); // 強制顯示全部
+                } else {
+                    listEl.classList.add('hidden');
+                }
+            },
+
+            selectName(nameStr) {
+                const brandEl = document.getElementById('form-brand');
+                const nameEl = document.getElementById('form-name');
+                nameEl.value = nameStr;
+                document.getElementById('name-custom-list').classList.add('hidden');
+
+                const brandVal = brandEl.value.trim();
+                const found = FRAGRANCE_CATALOG.find(c =>
+                    c.name === nameStr && (!brandVal || c.brand.toLowerCase().includes(brandVal.toLowerCase()))
+                );
+
+                if (found) {
+                    this.applyCatalogItem(found.brand, found.name);
+                }
+            },
+
+            /* ==================== AUTO-LOOKUP & SMART CLEARING ==================== */
+            onBrandInput(fromSelection = false) {
+                const brandInput = document.getElementById('form-brand').value;
+                const normBrand = brandInput.trim().toLowerCase();
+
+                // 智慧連動清空：如果品牌改變了（或是被手動刪除了），自動清空香水名稱與香調
+                if (this.lastTypedBrand !== undefined && this.lastTypedBrand !== brandInput) {
+                    document.getElementById('form-name').value = '';
+                    document.getElementById('form-concentration').value = '';
+                    document.getElementById('form-family').value = '';
+                    document.getElementById('form-top-notes').value = '';
+                    document.getElementById('form-mid-notes').value = '';
+                    document.getElementById('form-base-notes').value = '';
+                    document.getElementById('lookup-status').classList.add('hidden');
+                }
+                this.lastTypedBrand = brandInput;
+
+                if (!fromSelection) {
+                    this.showBrandDropdown(false); // 一邊打字一邊過濾選單
+                }
+
                 const suggestionBox = document.getElementById('brand-quick-suggestions');
 
                 if (this.brandDebounceTimer) clearTimeout(this.brandDebounceTimer);
 
                 if (!normBrand) {
                     suggestionBox.classList.add('hidden');
-                    perfumeDatalist.innerHTML = ''; // 清空選項
                     return;
                 }
 
                 const matched = FRAGRANCE_CATALOG.filter(item => item.brand.toLowerCase().includes(normBrand));
                 if (matched.length >= 5) {
                     this.renderBrandSuggestionChips(matched);
-                } else if (brandInput.length >= 2) {
+                } else if (normBrand.length >= 2) {
                     if (matched.length > 0) {
                         this.renderBrandSuggestionChips(matched);
                     }
@@ -913,13 +1015,14 @@
                 }
             },
 
+            onNameInput() {
+                this.showNameDropdown(false); // 一邊打字一邊過濾選單
+            },
+
             renderBrandSuggestionChips(items) {
-                const perfumeDatalist = document.getElementById('perfume-datalist');
                 const suggestionBox = document.getElementById('brand-quick-suggestions');
                 const chipsContainer = document.getElementById('brand-suggestion-chips');
 
-                // 因為重複項目已經被過濾，所以這裡只會印出官方正式名稱 m.name
-                perfumeDatalist.innerHTML = items.map(m => `<option value="${this.escapeHtml(m.name)}">`).join('');
                 suggestionBox.classList.remove('hidden');
                 chipsContainer.innerHTML = items.map(m => `
                     <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" 
@@ -953,13 +1056,9 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    brand: { type: "STRING" },
-                                    name: { type: "STRING" },
-                                    concentration: { type: "STRING" },
-                                    family: { type: "STRING" },
-                                    topNotes: { type: "ARRAY", items: { type: "STRING" } },
-                                    midNotes: { type: "ARRAY", items: { type: "STRING" } },
-                                    baseNotes: { type: "ARRAY", items: { type: "STRING" } }
+                                    brand: { type: "STRING" }, name: { type: "STRING" }, concentration: { type: "STRING" },
+                                    family: { type: "STRING" }, topNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                    midNotes: { type: "ARRAY", items: { type: "STRING" } }, baseNotes: { type: "ARRAY", items: { type: "STRING" } }
                                 },
                                 propertyOrdering: ["brand", "name", "concentration", "family", "topNotes", "midNotes", "baseNotes"]
                             }
@@ -969,9 +1068,7 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
 
                 try {
                     const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                     });
                     if (!response.ok) throw new Error('Network error');
                     const result = await response.json();
@@ -983,11 +1080,9 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                                 const normBrand = (item.brand || brand).toLowerCase();
                                 const normName = item.name.toLowerCase();
 
-                                // 強化防重複比對 (避免英文與中英夾雜時產生重複的資料)
                                 const exists = FRAGRANCE_CATALOG.some(c => {
                                     const cBrand = c.brand.toLowerCase();
                                     if (!cBrand.includes(normBrand) && !normBrand.includes(cBrand)) return false;
-                                    
                                     const cName = c.name.toLowerCase();
                                     const cAliases = (c.aliases || []).map(a => a.toLowerCase());
                                     return cName === normName || cName.includes(normName) || normName.includes(cName) || cAliases.some(a => a === normName || normName.includes(a));
@@ -995,18 +1090,12 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
 
                                 if (!exists) {
                                     FRAGRANCE_CATALOG.push({
-                                        brand: item.brand || brand,
-                                        name: item.name,
-                                        aliases: [item.name.toLowerCase()],
-                                        concentration: item.concentration,
-                                        family: item.family,
-                                        topNotes: item.topNotes || [],
-                                        midNotes: item.midNotes || [],
-                                        baseNotes: item.baseNotes || []
+                                        brand: item.brand || brand, name: item.name, aliases: [item.name.toLowerCase()],
+                                        concentration: item.concentration, family: item.family,
+                                        topNotes: item.topNotes || [], midNotes: item.midNotes || [], baseNotes: item.baseNotes || []
                                     });
                                 }
                             });
-                            this.populateBrandDatalist();
                             const normBrandFilter = brand.toLowerCase();
                             const matched = FRAGRANCE_CATALOG.filter(c => c.brand.toLowerCase().includes(normBrandFilter) || normBrandFilter.includes(c.brand.toLowerCase()));
                             this.renderBrandSuggestionChips(matched.length >= 5 ? matched : list);
@@ -1041,31 +1130,17 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
             },
 
             fillFragranceFields(data) {
-                if (data.brand) {
-                    document.getElementById('form-brand').value = data.brand;
-                }
-                if (data.name) {
-                    document.getElementById('form-name').value = data.name;
-                }
+                if (data.brand) document.getElementById('form-brand').value = data.brand;
+                if (data.name) document.getElementById('form-name').value = data.name;
                 if (data.concentration) {
                     const concSelect = document.getElementById('form-concentration');
                     const options = Array.from(concSelect.options).map(o => o.value);
-                    if (options.includes(data.concentration)) {
-                        concSelect.value = data.concentration;
-                    }
+                    if (options.includes(data.concentration)) { concSelect.value = data.concentration; }
                 }
-                if (data.family) {
-                    document.getElementById('form-family').value = data.family;
-                }
-                if (Array.isArray(data.topNotes)) {
-                    document.getElementById('form-top-notes').value = data.topNotes.join('、');
-                }
-                if (Array.isArray(data.midNotes)) {
-                    document.getElementById('form-mid-notes').value = data.midNotes.join('、');
-                }
-                if (Array.isArray(data.baseNotes)) {
-                    document.getElementById('form-base-notes').value = data.baseNotes.join('、');
-                }
+                if (data.family) document.getElementById('form-family').value = data.family;
+                if (Array.isArray(data.topNotes)) document.getElementById('form-top-notes').value = data.topNotes.join('、');
+                if (Array.isArray(data.midNotes)) document.getElementById('form-mid-notes').value = data.midNotes.join('、');
+                if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
             },
 
             showLookupStatus(msg, isLoading = false) {
@@ -1073,11 +1148,8 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                 const spinner = document.getElementById('lookup-spinner');
                 const text = document.getElementById('lookup-status-text');
                 box.classList.remove('hidden');
-                if (isLoading) {
-                    spinner.classList.remove('hidden');
-                } else {
-                    spinner.classList.add('hidden');
-                }
+                if (isLoading) { spinner.classList.remove('hidden'); } 
+                else { spinner.classList.add('hidden'); }
                 text.textContent = msg;
             },
 
@@ -1090,7 +1162,6 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                     return;
                 }
 
-                // 先找 JSON 建立好的資料庫
                 const normBrand = brand.toLowerCase();
                 const normName = name.toLowerCase();
                 const localMatch = FRAGRANCE_CATALOG.find(item => {
@@ -1105,7 +1176,6 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                     return;
                 }
 
-                // 找不到才打 API
                 const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
                 if (!apiKey) {
                     this.showToast('圖鑑中無此香水，請點擊右上角「設定金鑰」以啟用線上查找', 'error');
@@ -1125,13 +1195,9 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                         responseSchema: {
                             type: "OBJECT",
                             properties: {
-                                brand: { type: "STRING" },
-                                name: { type: "STRING" },
-                                concentration: { type: "STRING" },
-                                family: { type: "STRING" },
-                                topNotes: { type: "ARRAY", items: { type: "STRING" } },
-                                midNotes: { type: "ARRAY", items: { type: "STRING" } },
-                                baseNotes: { type: "ARRAY", items: { type: "STRING" } }
+                                brand: { type: "STRING" }, name: { type: "STRING" }, concentration: { type: "STRING" },
+                                family: { type: "STRING" }, topNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                midNotes: { type: "ARRAY", items: { type: "STRING" } }, baseNotes: { type: "ARRAY", items: { type: "STRING" } }
                             }
                         }
                     }
@@ -1139,9 +1205,7 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
 
                 try {
                     const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                     });
                     if (!response.ok) throw new Error('Network error');
                     const result = await response.json();
@@ -1206,19 +1270,15 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                 const hasFamily = this.selectedFamily !== 'all';
 
                 if (searchBtn) {
-                    if (this.isSearchOpen || hasQuery) {
-                        searchBtn.className = 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm';
-                    } else {
-                        searchBtn.className = 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
-                    }
+                    searchBtn.className = (this.isSearchOpen || hasQuery)
+                        ? 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm'
+                        : 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
                 }
 
                 if (filterBtn) {
-                    if (this.isFilterOpen || hasFamily) {
-                        filterBtn.className = 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm';
-                    } else {
-                        filterBtn.className = 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
-                    }
+                    filterBtn.className = (this.isFilterOpen || hasFamily)
+                        ? 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm'
+                        : 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
                 }
 
                 if (filterLabel) {
@@ -1480,18 +1540,14 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
 
             /* ==================== MODAL & CRUD OPERATIONS ==================== */
             
-            // 獨立的清空表單方法，徹底清除快取資料與 UI 狀態
             clearPerfumeForm() {
                 document.getElementById('perfume-form').reset();
                 document.getElementById('form-id').value = '';
                 document.getElementById('brand-quick-suggestions').classList.add('hidden');
                 document.getElementById('lookup-status').classList.add('hidden');
-                
-                // 清空香水名稱的快取選單，避免殘留上次的搜尋紀錄
-                const perfumeDatalist = document.getElementById('perfume-datalist');
-                if (perfumeDatalist) {
-                    perfumeDatalist.innerHTML = '';
-                }
+                this.lastTypedBrand = '';
+                document.getElementById('brand-custom-list').classList.add('hidden');
+                document.getElementById('name-custom-list').classList.add('hidden');
             },
 
             toggleLocationFieldByStatus() {
@@ -1511,7 +1567,7 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                 const modal = document.getElementById('perfume-modal');
                 const title = document.getElementById('modal-form-title');
                 
-                this.clearPerfumeForm(); // 確保每次開啟都是乾淨的
+                this.clearPerfumeForm();
 
                 if (editId) {
                     const p = this.perfumes.find(item => item.id === editId);
@@ -1529,6 +1585,8 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                     document.getElementById('form-volume').value = p.volume || '';
                     document.getElementById('form-price').value = p.price || '';
                     document.getElementById('form-location').value = p.purchaseLocation || '';
+                    
+                    this.lastTypedBrand = p.brand || '';
                 } else {
                     title.textContent = '新增香水與香調表';
                     document.getElementById('form-status').value = this.wardrobeMode === 'wishlist' ? 'wishlist' : 'owned';
@@ -1566,7 +1624,6 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                 const price = (status !== 'wishlist' && priceVal !== '') ? Number(priceVal) : '';
                 const purchaseLocation = status !== 'wishlist' ? locationVal : '';
 
-                // 檢查是否為資料庫中尚未記錄的「全新」香水 (只在新增時檢查)
                 let isNewToCatalog = false;
                 if (!id) {
                     const normBrand = brand.toLowerCase();
@@ -1595,7 +1652,7 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
 
                 this.savePerfumesToStorage();
                 this.closePerfumeModal();
-                this.clearPerfumeForm(); // 確保快取清除
+                this.clearPerfumeForm();
 
                 if (status === 'wishlist') {
                     this.wardrobeMode = 'wishlist';
@@ -1604,12 +1661,10 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                 }
                 this.renderAll();
 
-                // 觸發自願貢獻資料庫的詢問 (模擬發送至 GCP API)
                 if (isNewToCatalog) {
                     setTimeout(() => {
                         const wantsToUpload = confirm(`「${brand} - ${name}」是全新的香水資料！\n\n是否願意將此香調上傳至公開資料庫，分享給其他使用者？`);
                         if (wantsToUpload) {
-                            // 這裡替換成你 GCP 虛擬機的真實 API URL 即可
                             fetch('https://your-gcp-api-endpoint.com/upload', { 
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -1620,7 +1675,7 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                                 this.showToast('上傳失敗，但資料已安全保存在您的裝置中。', 'error');
                             });
                         }
-                    }, 600); // 稍微延遲讓上一個 Toast 先顯示
+                    }, 600);
                 }
             },
 
