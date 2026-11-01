@@ -369,7 +369,7 @@
         </button>
     </nav>
 
-    <!-- ==================== MODAL: API KEY CONFIG (Strictly gemini-3-flash-preview) ==================== -->
+    <!-- ==================== MODAL: API KEY CONFIG ==================== -->
     <div id="api-key-modal" class="fixed inset-0 z-50 hidden bg-ink/50 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-paper border border-stone-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-fade-in">
             <div class="flex justify-between items-center border-b border-stone-200 pb-3">
@@ -612,7 +612,6 @@
             return { bg: '#E6DDD2', accent: '#6E5536', badge: 'bg-stone-100 text-stone-700 border-stone-200' };
         }
 
-        // 修改為 let，允許從 fragrances.json 擴充
         let FRAGRANCE_CATALOG = [
             // Diptyque (7 items)
             { brand: 'Diptyque', name: '肌膚之華 Fleur de Peau', aliases: ['肌膚之華', 'fleur de peau'], concentration: 'EDP 淡香精', family: '花香麝香調', topNotes: ['醛', '粉紅胡椒', '當歸', '佛手柑'], midNotes: ['鳶尾花', '土耳其玫瑰'], baseNotes: ['白麝香', '黃葵', '胡蘿蔔籽', '檀香', '龍涎香'] },
@@ -696,7 +695,7 @@
                 this.renderAll();
             },
 
-            // 讀取外部 JSON 資料庫，擴充原本的 FRAGRANCE_CATALOG
+            // 讀取外部 JSON 資料庫，並強化防重複邏輯
             async loadDatabase() {
                 try {
                     const response = await fetch('./fragrances.json');
@@ -705,8 +704,18 @@
                         externalData.forEach(item => {
                             const normBrand = item.brand.toLowerCase();
                             const normName = item.name.toLowerCase();
-                            // 避免重複加入
-                            if (!FRAGRANCE_CATALOG.some(c => c.brand.toLowerCase() === normBrand && c.name.toLowerCase() === normName)) {
+                            
+                            // 防重複比對邏輯 (支援中英文互查與別名)
+                            const exists = FRAGRANCE_CATALOG.some(c => {
+                                const cBrand = c.brand.toLowerCase();
+                                if (!cBrand.includes(normBrand) && !normBrand.includes(cBrand)) return false;
+                                
+                                const cName = c.name.toLowerCase();
+                                const cAliases = (c.aliases || []).map(a => a.toLowerCase());
+                                return cName === normName || cName.includes(normName) || normName.includes(cName) || cAliases.some(a => a === normName || normName.includes(a));
+                            });
+
+                            if (!exists) {
                                 FRAGRANCE_CATALOG.push({
                                     brand: item.brand,
                                     name: item.name,
@@ -887,7 +896,7 @@
 
                 if (!normBrand) {
                     suggestionBox.classList.add('hidden');
-                    perfumeDatalist.innerHTML = '';
+                    perfumeDatalist.innerHTML = ''; // 清空選項
                     return;
                 }
 
@@ -909,6 +918,7 @@
                 const suggestionBox = document.getElementById('brand-quick-suggestions');
                 const chipsContainer = document.getElementById('brand-suggestion-chips');
 
+                // 因為重複項目已經被過濾，所以這裡只會印出官方正式名稱 m.name
                 perfumeDatalist.innerHTML = items.map(m => `<option value="${this.escapeHtml(m.name)}">`).join('');
                 suggestionBox.classList.remove('hidden');
                 chipsContainer.innerHTML = items.map(m => `
@@ -970,7 +980,19 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                         const list = JSON.parse(text);
                         if (Array.isArray(list) && list.length > 0) {
                             list.forEach(item => {
-                                const exists = FRAGRANCE_CATALOG.some(c => c.brand.toLowerCase() === item.brand.toLowerCase() && c.name.toLowerCase() === item.name.toLowerCase());
+                                const normBrand = (item.brand || brand).toLowerCase();
+                                const normName = item.name.toLowerCase();
+
+                                // 強化防重複比對 (避免英文與中英夾雜時產生重複的資料)
+                                const exists = FRAGRANCE_CATALOG.some(c => {
+                                    const cBrand = c.brand.toLowerCase();
+                                    if (!cBrand.includes(normBrand) && !normBrand.includes(cBrand)) return false;
+                                    
+                                    const cName = c.name.toLowerCase();
+                                    const cAliases = (c.aliases || []).map(a => a.toLowerCase());
+                                    return cName === normName || cName.includes(normName) || normName.includes(cName) || cAliases.some(a => a === normName || normName.includes(a));
+                                });
+
                                 if (!exists) {
                                     FRAGRANCE_CATALOG.push({
                                         brand: item.brand || brand,
@@ -985,8 +1007,8 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                                 }
                             });
                             this.populateBrandDatalist();
-                            const normBrand = brand.toLowerCase();
-                            const matched = FRAGRANCE_CATALOG.filter(c => c.brand.toLowerCase().includes(normBrand) || normBrand.includes(c.brand.toLowerCase()));
+                            const normBrandFilter = brand.toLowerCase();
+                            const matched = FRAGRANCE_CATALOG.filter(c => c.brand.toLowerCase().includes(normBrandFilter) || normBrandFilter.includes(c.brand.toLowerCase()));
                             this.renderBrandSuggestionChips(matched.length >= 5 ? matched : list);
                             this.showLookupStatus(`已為你載入「${brand}」的 ${matched.length} 款熱門香水，點選即可一鍵帶入`, false);
                             return;
@@ -1464,6 +1486,12 @@ family 請直接填寫品牌官方或常見的繁體中文簡潔香調名稱。`
                 document.getElementById('form-id').value = '';
                 document.getElementById('brand-quick-suggestions').classList.add('hidden');
                 document.getElementById('lookup-status').classList.add('hidden');
+                
+                // 清空香水名稱的快取選單，避免殘留上次的搜尋紀錄
+                const perfumeDatalist = document.getElementById('perfume-datalist');
+                if (perfumeDatalist) {
+                    perfumeDatalist.innerHTML = '';
+                }
             },
 
             toggleLocationFieldByStatus() {
