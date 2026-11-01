@@ -473,61 +473,113 @@
         });
       },
       async searchBrandSuggestions() {
-        if (this.isLookingUp) return;
-        const brand = document.getElementById('form-brand').value.trim();
-        if (!brand) { this.showToast('請先輸入品牌名稱', 'error'); return; }
+  if (this.isLookingUp) return;
+  const brand = document.getElementById('form-brand').value.trim();
+  if (!brand) {
+    this.showToast('請先輸入品牌名稱', 'error');
+    return;
+  }
 
-        const normBrand = brand.toLowerCase();
-        const matched = FRAGRANCE_CATALOG.filter(item => item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase()));
+  const normBrand = brand.toLowerCase();
+  const matched = FRAGRANCE_CATALOG.filter(item =>
+    item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase())
+  );
 
-        if (matched.length >= 5) {
-          this.renderBrandSuggestionChips(matched);
-          this.showLookupStatus(`已載入「${brand}」的 5 款熱門香水，點選即可帶入`, false);
-          return;
+  if (matched.length >= 5) {
+    this.renderBrandSuggestionChips(matched.slice(0, 5));
+    this.showLookupStatus(`已載入「${brand}」的 5 款熱門香水，點選即可帶入`, false);
+    return;
+  }
+
+  const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
+  if (!apiKey) {
+    if (matched.length > 0) {
+      this.renderBrandSuggestionChips(matched.slice(0, 5));
+      this.showLookupStatus(`已顯示內建的 ${matched.length} 款香水（設定 API 金鑰可聯網搜尋更多）`, false);
+    } else {
+      this.showToast('請先點擊右上角「設定金鑰」以啟用聯網搜尋', 'error');
+      this.openApiKeyModal();
+    }
+    return;
+  }
+
+  this.isLookingUp = true;
+  this.setLookupButtonsDisabled(true);
+  this.showLookupStatus(`正在透過 Google 搜尋查找「${brand}」最熱門的香水...`, true);
+
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  
+  const prompt = `請使用 Google 搜尋品牌「${brand}」最知名、最熱門的 5 款代表性香水及其官方香調表。
+請嚴格只回傳 JSON 陣列（最多 5 筆，不要包含 Markdown 語法或其他解釋文字），格式如下：
+[
+  {
+    "brand": "官方品牌名",
+    "name": "繁體中文譯名 英文原名",
+    "concentration": "從 EDP 淡香精 / EDT 淡香水 / Parfum 香精 / EDC 古龍水 / 髮香/身體噴霧 擇一",
+    "family": "繁體中文簡潔主香調（如：木質調、花香調、木質花香調、柑橘調等）",
+    "topNotes": ["前調1", "前調2"],
+    "midNotes": ["中調1", "中調2"],
+    "baseNotes": ["後調1", "後調2"]
+  }
+]`;
+
+  const payload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    tools: [{ googleSearch: {} }],
+    generationConfig: { temperature: 0.2 }
+  };
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API 錯誤詳情 (Brand Search):", errorText);
+      throw new Error(`API 請求失敗: 狀態碼 ${response.status}`);
+    }
+    
+    const result = await response.json();
+    const text = result?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
+    const list = this.extractJsonFromText(text);
+
+    if (Array.isArray(list) && list.length > 0) {
+      const topFive = list.slice(0, 5);
+      topFive.forEach(item => {
+        if (!item.name) return;
+        const exists = FRAGRANCE_CATALOG.some(
+          c => c.brand.toLowerCase() === (item.brand || brand).toLowerCase() &&
+               c.name.toLowerCase() === item.name.toLowerCase()
+        );
+        if (!exists) {
+          FRAGRANCE_CATALOG.push({
+            brand: item.brand || brand,
+            name: item.name,
+            aliases: [item.name.toLowerCase()],
+            concentration: item.concentration || '',
+            family: item.family || '',
+            topNotes: Array.isArray(item.topNotes) ? item.topNotes : [],
+            midNotes: Array.isArray(item.midNotes) ? item.midNotes : [],
+            baseNotes: Array.isArray(item.baseNotes) ? item.baseNotes : []
+          });
         }
-
-        const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-        if (!apiKey) {
-          if (matched.length > 0) {
-            this.renderBrandSuggestionChips(matched);
-            this.showLookupStatus(`已顯示內建的香水（設定 API 金鑰可聯網搜尋更多）`, false);
-          } else {
-            this.showToast('請先設定金鑰以啟用聯網搜尋', 'error'); this.openApiKeyModal();
-          }
-          return;
-        }
-
-        this.isLookingUp = true;
-        this.setLookupButtonsDisabled(true);
-        this.showLookupStatus(`正在透過 Google 搜尋查找「${brand}」最熱門的香水（最多 5 款）...`, true);
-
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const prompt = `請使用 Google 搜尋品牌「${brand}」最知名、最熱門的 5 款代表性香水及其官方香調表。請嚴格只回傳 JSON 陣列（最多 5 筆），格式如下：\n[\n  {\n    "brand": "官方品牌名",\n    "name": "繁體中文譯名 英文原名",\n    "concentration": "EDP 淡香精 / EDT 淡香水 / Parfum 香精 / EDC 古龍水 / 髮香/身體噴霧",\n    "family": "簡潔主香調",\n    "topNotes": ["前調1"],\n    "midNotes": ["中調1"],\n    "baseNotes": ["後調1"]\n  }\n]`;
-        
-        try {
-          const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], tools: [{ google_search: {} }], generationConfig: { temperature: 0.2 } }) });
-          if (!response.ok) throw new Error('Network error');
-          const result = await response.json();
-          const text = result?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
-          const list = this.extractJsonFromText(text);
-
-          if (Array.isArray(list) && list.length > 0) {
-            const topFive = list.slice(0, 5);
-            topFive.forEach(item => {
-              if (!item.name) return;
-              if (!FRAGRANCE_CATALOG.some(c => c.brand.toLowerCase() === (item.brand || brand).toLowerCase() && c.name.toLowerCase() === item.name.toLowerCase())) {
-                FRAGRANCE_CATALOG.push({ brand: item.brand || brand, name: item.name, aliases: [item.name.toLowerCase()], concentration: item.concentration || '', family: item.family || '', topNotes: Array.isArray(item.topNotes) ? item.topNotes : [], midNotes: Array.isArray(item.midNotes) ? item.midNotes : [], baseNotes: Array.isArray(item.baseNotes) ? item.baseNotes : [] });
-              }
-            });
-            this.populateBrandDatalist(); this.renderBrandSuggestionChips(topFive);
-            this.showLookupStatus(`已載入「${brand}」的 ${topFive.length} 款熱門香水，點選即可帶入`, false);
-          } else throw new Error('Empty list');
-        } catch (e) {
-          this.showLookupStatus(`未能取得「${brand}」熱門清單，請直接輸入名稱並搜尋`, false);
-        } finally {
-          this.isLookingUp = false; this.setLookupButtonsDisabled(false);
-        }
-      },
+      });
+      this.populateBrandDatalist();
+      this.renderBrandSuggestionChips(topFive);
+      this.showLookupStatus(`已為你載入「${brand}」的 ${topFive.length} 款熱門香水，點選即可帶入`, false);
+    } else {
+      throw new Error('API 回傳的資料無法解析為 JSON 陣列');
+    }
+  } catch (e) {
+    console.error("查找失敗:", e);
+    this.showLookupStatus(`未能取得清單，請確認 API 金鑰有效或直接輸入香水名稱後點擊「搜尋香調」`, false);
+  } finally {
+    this.isLookingUp = false;
+    this.setLookupButtonsDisabled(false);
+  }
+},
       applyCatalogItem(brand, name) {
         const found = FRAGRANCE_CATALOG.find(item => item.brand === brand && item.name === name);
         if (!found) return;
@@ -551,61 +603,134 @@
         document.getElementById('lookup-spinner').classList.toggle('hidden', !isLoading);
         document.getElementById('lookup-status-text').textContent = msg;
       },
-      async lookupFragranceInfo() {
-        if (this.isLookingUp) return;
-        const brand = document.getElementById('form-brand').value.trim();
-        const name = document.getElementById('form-name').value.trim();
+  async lookupFragranceInfo() {
+  if (this.isLookingUp) return;
+  const brand = document.getElementById('form-brand').value.trim();
+  const name = document.getElementById('form-name').value.trim();
 
-        if (!brand && !name) { this.showToast('請先輸入品牌或名稱再搜尋', 'error'); return; }
-        if (brand && !name) { await this.searchBrandSuggestions(); return; }
+  if (!brand && !name) {
+    this.showToast('請先輸入品牌或香水名稱，再點擊搜尋', 'error');
+    return;
+  }
 
-        const normBrand = brand.toLowerCase(); const normName = name.toLowerCase();
-        const localMatches = FRAGRANCE_CATALOG.filter(item => {
-          const bMatch = !normBrand || item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase());
-          const nMatch = item.name.toLowerCase().includes(normName) || (item.aliases || []).some(a => normName.includes(a.toLowerCase()) || a.toLowerCase().includes(normName));
-          return bMatch && nMatch && normName.length > 0;
-        });
+  if (brand && !name) {
+    await this.searchBrandSuggestions();
+    return;
+  }
 
-        if (localMatches.length === 1) {
-          this.fillFragranceFields(localMatches[0]); this.showLookupStatus(`已帶入內建圖鑑「${localMatches[0].brand} - ${localMatches[0].name}」`, false); return;
-        } else if (localMatches.length > 1) {
-          this.renderBrandSuggestionChips(localMatches); this.fillFragranceFields(localMatches[0]); this.showLookupStatus(`找到 ${Math.min(localMatches.length, 5)} 款，已先帶入第一款`, false); return;
+  const normBrand = brand.toLowerCase();
+  const normName = name.toLowerCase();
+  const localMatches = FRAGRANCE_CATALOG.filter(item => {
+    const bMatch = !normBrand || item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase());
+    const nMatch = item.name.toLowerCase().includes(normName) ||
+                   (item.aliases || []).some(a => normName.includes(a.toLowerCase()) || a.toLowerCase().includes(normName));
+    return bMatch && nMatch && normName.length > 0;
+  });
+
+  if (localMatches.length === 1) {
+    this.fillFragranceFields(localMatches[0]);
+    this.showLookupStatus(`已帶入內建圖鑑「${localMatches[0].brand} - ${localMatches[0].name}」的香調表`, false);
+    return;
+  } else if (localMatches.length > 1) {
+    this.renderBrandSuggestionChips(localMatches.slice(0, 5));
+    this.fillFragranceFields(localMatches[0]);
+    this.showLookupStatus(`找到 ${Math.min(localMatches.length, 5)} 款相符香水，已先帶入第一款`, false);
+    return;
+  }
+
+  const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
+  if (!apiKey) {
+    this.showToast('內建無此資料，請點擊右上角「設定金鑰」啟用聯網搜尋', 'error');
+    this.openApiKeyModal();
+    return;
+  }
+
+  this.isLookingUp = true;
+  this.setLookupButtonsDisabled(true);
+  this.showLookupStatus(`正在透過 Google 搜尋檢索「${brand} ${name}」的香調表...`, true);
+
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  
+  const prompt = `請使用 Google 搜尋查找香水：品牌「${brand}」、名稱「${name}」。
+如果找到多款相似香水，請列出最符合的前 1 到 5 款（最多 5 款）。
+請嚴格只回傳 JSON 陣列（不要加 Markdown 程式碼區塊或任何其他說明文字），格式如下：
+[
+  {
+    "brand": "官方正確品牌名",
+    "name": "繁體中文正式譯名 + 空白 + 英文原名",
+    "concentration": "必須從以下選項擇一：EDP 淡香精、EDT 淡香水、Parfum 香精、EDC 古龍水、髮香/身體噴霧",
+    "family": "繁體中文簡潔香調名稱（如：木質調、花香調等）",
+    "topNotes": ["前調香材1", "前調香材2"],
+    "midNotes": ["中調香材1", "中調香材2"],
+    "baseNotes": ["後調香材1", "後調香材2"]
+  }
+]`;
+
+  const payload = {
+    contents: [{ parts: [{ text: prompt }] }],
+    tools: [{ googleSearch: {} }],
+    generationConfig: { temperature: 0.1 }
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API 錯誤詳情 (Info Lookup):", errorText);
+      throw new Error(`API 請求失敗: 狀態碼 ${response.status}`);
+    }
+    
+    const result = await response.json();
+    const text = result?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
+    const parsed = this.extractJsonFromText(text);
+    const list = Array.isArray(parsed) ? parsed.slice(0, 5) : (parsed && parsed.name ? [parsed] : []);
+
+    if (list.length > 0) {
+      list.forEach(item => {
+        if (!item.name) return;
+        const exists = FRAGRANCE_CATALOG.some(
+          c => c.brand.toLowerCase() === (item.brand || brand).toLowerCase() &&
+               c.name.toLowerCase() === item.name.toLowerCase()
+        );
+        if (!exists) {
+          FRAGRANCE_CATALOG.push({
+            brand: item.brand || brand,
+            name: item.name,
+            aliases: [item.name.toLowerCase()],
+            concentration: item.concentration || '',
+            family: item.family || '',
+            topNotes: Array.isArray(item.topNotes) ? item.topNotes : [],
+            midNotes: Array.isArray(item.midNotes) ? item.midNotes : [],
+            baseNotes: Array.isArray(item.baseNotes) ? item.baseNotes : []
+          });
         }
+      });
 
-        const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-        if (!apiKey) { this.showToast('請先設定金鑰啟用 Google 聯網搜尋', 'error'); this.openApiKeyModal(); return; }
+      const primary = list[0];
+      this.fillFragranceFields(primary);
 
-        this.isLookingUp = true; this.setLookupButtonsDisabled(true);
-        this.showLookupStatus(`正在透過 Google 搜尋檢索「${brand} ${name}」的香調表...`, true);
-
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-        const prompt = `請使用 Google 搜尋查找香水：品牌「${brand}」、名稱「${name}」。如果找到多款相似，列出最符合的前 1 到 5 款。嚴格回傳 JSON 陣列，格式：\n[\n  {\n    "brand": "官方正確品牌名",\n    "name": "繁體中文正式譯名 英文原名",\n    "concentration": "EDP 淡香精 / EDT 淡香水 / Parfum 香精 / EDC 古龍水 / 髮香/身體噴霧",\n    "family": "簡潔主香調",\n    "topNotes": ["前調"],\n    "midNotes": ["中調"],\n    "baseNotes": ["後調"]\n  }\n]`;
-        
-        try {
-          const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], tools: [{ google_search: {} }], generationConfig: { temperature: 0.1 } }) });
-          if (!response.ok) throw new Error('Network error');
-          const result = await response.json();
-          const text = result?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('\n') || '';
-          const parsed = this.extractJsonFromText(text);
-          const list = Array.isArray(parsed) ? parsed.slice(0, 5) : (parsed && parsed.name ? [parsed] : []);
-
-          if (list.length > 0) {
-            list.forEach(item => {
-              if (!item.name) return;
-              if (!FRAGRANCE_CATALOG.some(c => c.brand.toLowerCase() === (item.brand || brand).toLowerCase() && c.name.toLowerCase() === item.name.toLowerCase())) {
-                FRAGRANCE_CATALOG.push({ brand: item.brand || brand, name: item.name, aliases: [item.name.toLowerCase()], concentration: item.concentration || '', family: item.family || '', topNotes: Array.isArray(item.topNotes) ? item.topNotes : [], midNotes: Array.isArray(item.midNotes) ? item.midNotes : [], baseNotes: Array.isArray(item.baseNotes) ? item.baseNotes : [] });
-              }
-            });
-            this.fillFragranceFields(list[0]);
-            if (list.length > 1) { this.renderBrandSuggestionChips(list); this.showLookupStatus(`帶入「${list[0].brand} - ${list[0].name}」，另有 ${list.length - 1} 款可於上方切換`, false); }
-            else { this.showLookupStatus(`已聯網查得「${list[0].brand} - ${list[0].name}」`, false); }
-          } else throw new Error('Empty result');
-        } catch (e) {
-          this.showLookupStatus(`查找結束：未能找到確切資料，請手動輸入`, false);
-        } finally {
-          this.isLookingUp = false; this.setLookupButtonsDisabled(false);
-        }
-      },
+      if (list.length > 1) {
+        this.renderBrandSuggestionChips(list);
+        this.showLookupStatus(`已自動帶入「${primary.brand} - ${primary.name}」，另有相近結果可於上方點選`, false);
+      } else {
+        this.showLookupStatus(`已聯網查得「${primary.brand} - ${primary.name}」並自動帶入香調表`, false);
+      }
+    } else {
+      throw new Error('API 無法取得有效 JSON 結果');
+    }
+  } catch (e) {
+    console.error("查找失敗:", e);
+    this.showLookupStatus(`查找結束：未能找到該香水的確切資料，請確認名稱是否正確或查看 Console (F12) 錯誤訊息`, false);
+  } finally {
+    this.isLookingUp = false;
+    this.setLookupButtonsDisabled(false);
+  }
+},
 
       /* ==================== WARDROBE & MISC FUNCTIONS ==================== */
       setWardrobeMode(mode) { this.wardrobeMode = mode; this.selectedFamily = 'all'; this.updateWardrobeModeUI(); this.renderFamilyFilterBar(); this.updateCompactButtonsState(); this.renderWardrobe(); },
