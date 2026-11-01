@@ -594,13 +594,20 @@
                     if (response.ok) {
                         const externalData = await response.json();
                         externalData.forEach(item => {
-                            const brandZh = item.brand_zh || '';
-                            const brandEn = item.brand_en || item.brand || '';
-                            const nameZh = item.name_zh || '';
-                            const nameEn = item.name_en || item.name || '';
+                            const brandZh = (item.brand_zh || '').trim();
+                            const brandEn = (item.brand_en || item.brand || '').trim();
+                            const nameZh = (item.name_zh || '').trim();
+                            const nameEn = (item.name_en || item.name || '').trim();
                             
                             const displayBrand = this.normalizeBrandName(brandZh || brandEn);
-                            const displayName = (nameZh || nameEn).trim();
+                            
+                            // 嚴格將名稱合併為中英雙語格式
+                            let displayName = '';
+                            if (nameZh && nameEn && nameZh.toLowerCase() !== nameEn.toLowerCase()) {
+                                displayName = `${nameZh} ${nameEn}`;
+                            } else {
+                                displayName = nameZh || nameEn;
+                            }
                             
                             const allKeywords = [brandZh, brandEn, nameZh, nameEn, ...(item.aliases || [])]
                                 .filter(Boolean)
@@ -630,7 +637,7 @@
                 }
 
                 this.perfumes.forEach(p => {
-                    const pBrand = (p.brand || '').trim();
+                    const pBrand = this.normalizeBrandName(p.brand || '');
                     const pName = (p.name || '').trim();
                     const pBrandLower = pBrand.toLowerCase();
                     const pNameLower = pName.toLowerCase();
@@ -897,6 +904,7 @@
                     return c.brand.toLowerCase().includes(brandVal) || keys.some(k => k.includes(brandVal) || brandVal.includes(k));
                 });
 
+                // 使用者直接點擊名稱清單，允許自動帶入
                 if (found) {
                     this.applyCatalogItem(found.brand, found.name);
                 }
@@ -935,7 +943,19 @@
                     return item.brand.toLowerCase().includes(normBrand) || keys.some(k => k.includes(normBrand));
                 });
 
-                this.renderBrandSuggestionChips(matched);
+                // 精準抓取最多5個不重複的香水候選
+                const uniqueMatches = [];
+                const seenNames = new Set();
+                for (let m of matched) {
+                    if (!seenNames.has(m.name)) {
+                        seenNames.add(m.name);
+                        uniqueMatches.push(m);
+                        if (uniqueMatches.length >= 5) break;
+                    }
+                }
+
+                // 絕不會自動填寫欄位，只渲染快速選單
+                this.renderBrandSuggestionChips(uniqueMatches);
             },
 
             onNameInput() {
@@ -946,10 +966,10 @@
                 const chipsContainer = document.getElementById('brand-suggestion-chips');
                 
                 if (items.length === 0) {
-                    chipsContainer.innerHTML = '<span class="text-[11px] text-muted py-1 bg-stone-100 px-2 rounded">本地尚無紀錄，可點擊上方按鈕上網搜尋</span>';
+                    chipsContainer.innerHTML = '<span class="text-[11px] text-muted py-1 bg-stone-100 px-2 rounded">本地尚無紀錄，點擊上方按鈕上網搜尋</span>';
                 } else {
                     chipsContainer.innerHTML = items.map(m => `
-                        <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all">
+                        <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all text-left">
                             ${this.escapeHtml(m.name)}
                         </button>
                     `).join('');
@@ -971,10 +991,12 @@
                 this.showLookupStatus(`正在查找網路上「${brand}」最熱門的香水清單...`, true);
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                 
-                const prompt = `請嚴格根據真實香水市場與品牌官方資訊，列出品牌「${brand}」最知名、最熱門的 6 款代表性香水及其完整香調表。
-                【語系要求】所有的 brand, name 以及香調 (Notes) 請「強制優先使用台灣正體中文」回傳，若無官方中文譯名才保留英文。
-                【嚴格規定】brand 欄位絕對不能包含任何代理商名稱或分類字眼。
-                【格式要求】請絕對只回傳純 JSON 陣列格式，不要加上 \`\`\`json 標籤，也不要有任何其他文字。`;
+                const prompt = `請嚴格根據真實香水市場與品牌官方資訊，列出品牌「${brand}」最知名、最熱門的 5 款代表性香水及其完整香調表。
+                【格式強制規定】
+                1. 香水名稱 (name) 欄位強制「必須同時包含中文與英文」，格式為「繁體中文名 英文名」（例如：英國梨與小蒼蘭 English Pear & Freesia）。絕對不可只給單一語言。
+                2. brand 欄位請給官方原名，絕對不能包含代理商名稱。
+                3. 香調與香材一律翻譯成台灣正體中文。
+                4. 絕對只回傳純 JSON 陣列格式，不要加上 \`\`\`json 標籤。`;
 
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
@@ -1038,13 +1060,25 @@
                                         existsTarget.searchKeywords = [...new Set([...(existsTarget.searchKeywords || []), ...newKeys])];
                                     }
                                 });
+                                
                                 const normBrandFilter = brand.toLowerCase();
                                 const matched = FRAGRANCE_CATALOG.filter(c => {
                                     const keys = c.searchKeywords || [];
                                     return c.brand.toLowerCase().includes(normBrandFilter) || keys.some(k => k.includes(normBrandFilter));
                                 });
-                                this.renderBrandSuggestionChips(matched.length >= 5 ? matched : list);
-                                this.showLookupStatus(`已為你載入「${brand}」的熱門香水，點選即可一鍵帶入`, false);
+                                
+                                const uniqueMatches = [];
+                                const seenNames = new Set();
+                                for (let m of matched) {
+                                    if (!seenNames.has(m.name)) {
+                                        seenNames.add(m.name);
+                                        uniqueMatches.push(m);
+                                        if (uniqueMatches.length >= 5) break;
+                                    }
+                                }
+
+                                this.renderBrandSuggestionChips(uniqueMatches);
+                                this.showLookupStatus(`已為你載入「${brand}」的熱門香水候選清單`, false);
                                 return;
                             }
                         }
@@ -1140,11 +1174,12 @@
 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                 
-                const prompt = `使用者輸入了品牌「${brand}」與香水名稱「${name}」。
-                請尋找該香水，並「強制優先以台灣常用的正體中文」回傳 brand 與 name（若真無官方中文譯名才保留英文）。
-                【絕對禁止】brand 欄位出現任何代理商或通路分類字眼（如「迷香人」、「夏利夫」等），只能回傳真實品牌名稱。
-                【語系要求】香調 (family) 與所有前中後味香材 (Notes) 請「一律翻譯成台灣正體中文」。
-                【格式要求】請絕對只回傳純 JSON 格式，不要加上 \`\`\`json 標籤，也不要有任何其他文字。`;
+                const prompt = `使用者輸入了品牌「${brand}」與香水名稱「${name}」。請尋找該香水資訊。
+                【格式強制規定】
+                1. 香水名稱 (name) 欄位強制「必須同時包含中文與英文」，格式為「繁體中文名 英文名」（例如：英國梨與小蒼蘭 English Pear & Freesia）。無論使用者原本輸入什麼，你都必須校正為中英雙語標示。
+                2. brand 欄位請給官方原名，絕對不能包含代理商名稱。
+                3. 香調與香材一律翻譯成台灣正體中文。
+                4. 絕對只回傳純 JSON 格式，不要加上 \`\`\`json 標籤。`;
 
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
@@ -1183,7 +1218,6 @@
                             
                             data.brand = this.normalizeBrandName(data.brand || brand);
                             
-                            // 立即將中英雙語綁定存入字典，防止存檔時英文關鍵字遺失
                             const existsTarget = FRAGRANCE_CATALOG.find(c => c.brand === data.brand && c.name === data.name);
                             const newKeys = [brand, name, data.brand, data.name].filter(Boolean).map(k => String(k).toLowerCase());
                             
@@ -1203,7 +1237,7 @@
                             }
 
                             this.fillFragranceFields(data);
-                            this.showLookupStatus(`已透過線上 AI 找到並帶入正體中文香調表`, false);
+                            this.showLookupStatus(`已透過線上 AI 找到並帶入雙語香調表`, false);
                             return;
                         }
                     }
