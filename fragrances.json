@@ -1,0 +1,362 @@
+[
+  {
+    "id": "jo-malone-english-pear",
+    "brand": "Jo Malone London",
+    "name": "English Pear & Freesia",
+    "aliases": ["英國梨與小蒼蘭", "英國梨", "祖瑪瓏英國梨", "國民香"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["哈密瓜", "威廉梨"],
+      "heart": ["小蒼蘭", "玫瑰"],
+      "base": ["廣藿香", "琥珀", "白麝香", "大黃"]
+    }
+  },
+  {
+    "id": "jo-malone-wood-sage",
+    "brand": "Jo Malone London",
+    "name": "Wood Sage & Sea Salt",
+    "aliases": ["鼠尾草與海鹽", "鼠草", "祖瑪瓏鼠尾草"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["秋葵籽", "布枯葉"],
+      "heart": ["海鹽", "礦物香調"],
+      "base": ["鼠尾草", "癒創木", "白麝香"]
+    }
+  },
+  {
+    "id": "jo-malone-peony-blush",
+    "brand": "Jo Malone London",
+    "name": "Peony & Blush Suede",
+    "aliases": ["牡丹與胭紅麂絨", "牡丹"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["紅蘋果"],
+      "heart": ["牡丹", "茉莉", "康乃馨", "玫瑰"],
+      "base": ["麂絨"]
+    }
+  },
+  {
+    "id": "jo-malone-blackberry-bay",
+    "brand": "Jo Malone London",
+    "name": "Blackberry & Bay",
+    "aliases": ["黑莓子與月桂葉", "黑莓"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["黑莓子"],
+      "heart": ["月桂葉"],
+      "base": ["雪松木"]
+    }
+  },
+  {
+    "id": "jo-malone-lime-basil",
+    "brand": "Jo Malone London",
+    "name": "Lime Basil & Mandarin",
+    "aliases": ["青檸羅勒與柑橘", "青檸"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["柑橘"],
+      "heart": ["羅勒"],
+      "base": ["琥珀木"]
+    }
+  },
+  {
+    "id": "le-labo-santal-33",
+    "brand": "Le Labo",
+    "name": "Santal 33",
+    "aliases": ["檀香33", "Santal33", "勒拉博檀香", "木質調神香"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["紫羅蘭葉", "鳶尾花", "紙莎草"],
+      "heart": ["小荳蔻", "雪松", "香根草"],
+      "base": ["檀香木", "龍涎香醚", "皮革"]
+    }
+  },
+  {
+    "id": "le-labo-another-13",
+    "brand": "Le Labo",
+    "name": "Another 13",
+    "aliases": ["另一個13", "13號", "勒拉博13", "偽體香"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["梨子", "柑橘", "蘋果"],
+      "heart": ["龍涎香醚", "茉莉", "苔蘚"],
+      "base": ["麝香錦葵", "水楊酸戊酯", "黃葵籽"]
+    }
+  },
+  {
+    "id": "le-labo-the-noir-29",
+    "brand": "Le Labo",
+    "name": "The Noir 29",
+    "aliases": ["黑茶29", "黑茶", "勒拉博黑茶"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["佛手柑", "無花果", "月桂葉"],
+      "heart": ["雪松木", "香根草", "麝香"],
+      "base": ["紅茶葉提取物", "菸草", "乾草"]
+    }
+  },
+  {
+    "id": "le-labo-rose-31",
+    "brand": "Le Labo",
+    "name": "Rose 31",
+    "aliases": ["玫瑰31", "勒拉博玫瑰", "木質玫瑰"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["玫瑰原精", "孜然"],
+      "heart": ["玫瑰", "香根草", "雪松"],
+      "base": ["麝香", "癒創木", "乳香", "勞丹脂"]
+    }
+  },
+  {
+    "id": "le-labo-bergamote-22",
+    "brand": "Le Labo",
+    "name": "Bergamote 22",
+    "aliases": ["佛手柑22", "勒拉博佛手柑"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["苦橙", "葡萄柚"],
+      "heart": ["佛手柑", "橙花"],
+      "base": ["琥珀", "麝香", "香根草"]
+    }
+  },
+  {
+    "id": "diptyque-tam-dao",
+    "brand": "Diptyque",
+    "name": "Tam Dao",
+    "aliases": ["譚道", "蒂普提克譚道", "廟宇香"],
+    "concentration": "EDT",
+    "notes": {
+      "top": ["玫瑰", "桃金孃", "義大利柏樹"],
+      "heart": ["檀香", "雪松"],
+      "base": ["香料", "琥珀", "白麝香", "巴西花梨木"]
+    }
+  },
+  {
+    "id": "diptyque-do-son",
+    "brand": "Diptyque",
+    "name": "Do Son",
+    "aliases": ["杜桑", "蒂普提克杜桑", "晚香玉"],
+    "concentration": "EDT",
+    "notes": {
+      "top": ["橙花", "玫瑰", "鳶尾花"],
+      "heart": ["晚香玉", "粉紅胡椒"],
+      "base": ["安息香", "麝香"]
+    }
+  },
+  {
+    "id": "diptyque-eau-rose",
+    "brand": "Diptyque",
+    "name": "Eau Rose",
+    "aliases": ["玫瑰之水", "蒂普提克玫瑰"],
+    "concentration": "EDT",
+    "notes": {
+      "top": ["佛手柑", "黑醋栗", "荔枝"],
+      "heart": ["大馬士革玫瑰", "摩洛哥玫瑰"],
+      "base": ["麝香", "雪松", "蜂蜜"]
+    }
+  },
+  {
+    "id": "diptyque-fleur-de-peau",
+    "brand": "Diptyque",
+    "name": "Fleur de Peau",
+    "aliases": ["肌膚之華", "蒂普提克肌膚之華"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["醛香", "當歸", "佛手柑", "粉紅胡椒"],
+      "heart": ["土耳其玫瑰", "鳶尾花"],
+      "base": ["麝香", "黃葵", "胡蘿蔔", "龍涎香", "皮革", "琥珀木"]
+    }
+  },
+  {
+    "id": "diptyque-philosykos",
+    "brand": "Diptyque",
+    "name": "Philosykos",
+    "aliases": ["希臘無花果", "無花果"],
+    "concentration": "EDT",
+    "notes": {
+      "top": ["無花果葉", "無花果"],
+      "heart": ["椰子", "綠色香調"],
+      "base": ["雪松", "木質香調", "無花果樹"]
+    }
+  },
+  {
+    "id": "byredo-blanche",
+    "brand": "Byredo",
+    "name": "Blanche",
+    "aliases": ["返璞歸真", "白色浪漫", "柏芮朵返璞歸真", "白香", "洗衣精香"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["白玫瑰", "粉紅胡椒", "醛香"],
+      "heart": ["紫羅蘭", "橙花", "牡丹"],
+      "base": ["金木", "檀香木", "麝香"]
+    }
+  },
+  {
+    "id": "byredo-rose-of-no-mans-land",
+    "brand": "Byredo",
+    "name": "Rose of No Man's Land",
+    "aliases": ["無人之境", "柏芮朵無人之境", "無人區玫瑰", "醫院玫瑰"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["粉紅胡椒", "土耳其玫瑰花瓣"],
+      "heart": ["覆盆子花", "土耳其玫瑰原精"],
+      "base": ["紙莎草", "白琥珀"]
+    }
+  },
+  {
+    "id": "byredo-gypsy-water",
+    "brand": "Byredo",
+    "name": "Gypsy Water",
+    "aliases": ["吉普賽之水", "流浪者之歌"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["佛手柑", "檸檬", "胡椒", "杜松果"],
+      "heart": ["焚香", "松針", "鳶尾根"],
+      "base": ["琥珀", "香草", "檀香木"]
+    }
+  },
+  {
+    "id": "byredo-mojave-ghost",
+    "brand": "Byredo",
+    "name": "Mojave Ghost",
+    "aliases": ["莫哈維之影", "幽魂"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["黃葵籽", "牙買加青玉蘭"],
+      "heart": ["紫羅蘭", "檀香木", "木蘭"],
+      "base": ["麝香", "琥珀", "雪松木"]
+    }
+  },
+  {
+    "id": "byredo-super-cedar",
+    "brand": "Byredo",
+    "name": "Super Cedar",
+    "aliases": ["北國之春", "超級雪松"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["玫瑰花瓣"],
+      "heart": ["維吉尼亞雪松"],
+      "base": ["海地香根草", "絲絨麝香"]
+    }
+  },
+  {
+    "id": "penhaligons-lord-george",
+    "brand": "Penhaligon's",
+    "name": "The Tragedy of Lord George",
+    "aliases": ["公鹿", "喬治公爵的悲劇", "獸首公鹿", "潘海利根公鹿", "渣男香"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["白蘭地", "蘭姆酒"],
+      "heart": ["刮鬍皂香", "木質香調"],
+      "base": ["零陵香豆", "琥珀"]
+    }
+  },
+  {
+    "id": "penhaligons-duchess-rose",
+    "brand": "Penhaligon's",
+    "name": "The Coveted Duchess Rose",
+    "aliases": ["狐狸", "令人垂涎的公爵夫人玫瑰", "獸首狐狸"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["橘子"],
+      "heart": ["玫瑰", "果香"],
+      "base": ["麝香", "木質香調"]
+    }
+  },
+  {
+    "id": "penhaligons-luna",
+    "brand": "Penhaligon's",
+    "name": "Luna",
+    "aliases": ["月亮女神", "潘海利根月神"],
+    "concentration": "EDT",
+    "notes": {
+      "top": ["檸檬", "佛手柑", "苦橙"],
+      "heart": ["玫瑰", "茉莉", "杜松子"],
+      "base": ["香脂冷杉", "麝香", "龍涎香"]
+    }
+  },
+  {
+    "id": "penhaligons-endymion",
+    "brand": "Penhaligon's",
+    "name": "Endymion",
+    "aliases": ["牧羊少年"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["佛手柑", "橘子", "薰衣草", "鼠尾草"],
+      "heart": ["天竺葵", "咖啡精華"],
+      "base": ["岩蘭草", "肉豆蔻", "黑胡椒", "小豆蔻", "麝香", "皮革", "檀香", "薰香", "乳香", "沒藥"]
+    }
+  },
+  {
+    "id": "penhaligons-quercus",
+    "brand": "Penhaligon's",
+    "name": "Quercus",
+    "aliases": ["皇家橡樹", "橡樹"],
+    "concentration": "EDC",
+    "notes": {
+      "top": ["檸檬", "萊姆", "橘子", "佛手柑"],
+      "heart": ["茉莉", "野百合", "小荳蔻"],
+      "base": ["橡樹苔", "檀香", "白松香", "麝香", "琥珀"]
+    }
+  },
+  {
+    "id": "tom-ford-oud-wood",
+    "brand": "Tom Ford",
+    "name": "Oud Wood",
+    "aliases": ["神秘東方", "烏木", "TF烏木", "湯姆福特烏木"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["花椒", "紅胡椒", "小豆蔻"],
+      "heart": ["沉香木(烏木)", "檀香", "香根草"],
+      "base": ["零陵香豆", "香草", "琥珀"]
+    }
+  },
+  {
+    "id": "tom-ford-white-suede",
+    "brand": "Tom Ford",
+    "name": "White Suede",
+    "aliases": ["白麝香", "暗香", "TF白麝香"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["百里香", "茶葉"],
+      "heart": ["鈴蘭", "藏紅花", "玫瑰"],
+      "base": ["麂皮", "麝香", "檀香", "乳香", "琥珀"]
+    }
+  },
+  {
+    "id": "tom-ford-lost-cherry",
+    "brand": "Tom Ford",
+    "name": "Lost Cherry",
+    "aliases": ["失落櫻桃", "落櫻", "TF櫻桃"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["黑櫻桃", "櫻桃酒", "苦杏仁"],
+      "heart": ["酸櫻桃糖漿", "土耳其玫瑰", "沙巴茉莉"],
+      "base": ["秘魯香脂", "烘焙零陵香豆", "檀香", "香根草", "雪松"]
+    }
+  },
+  {
+    "id": "tom-ford-bitter-peach",
+    "brand": "Tom Ford",
+    "name": "Bitter Peach",
+    "aliases": ["蜜桃狂想", "苦桃", "TF蜜桃"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["水蜜桃", "血橙", "小豆蔻", "天芥菜"],
+      "heart": ["蘭姆酒", "干邑白蘭地", "印蒿", "茉莉"],
+      "base": ["印尼廣藿香", "香草", "檀香", "零陵香豆", "喀什米爾木", "安息香", "勞丹脂", "香根草"]
+    }
+  },
+  {
+    "id": "tom-ford-soleil-neige",
+    "brand": "Tom Ford",
+    "name": "Soleil Neige",
+    "aliases": ["冬日光芒", "TF冬日"],
+    "concentration": "EDP",
+    "notes": {
+      "top": ["佛手柑", "胡蘿蔔籽"],
+      "heart": ["白花", "橙花", "茉莉", "玫瑰", "土耳其玫瑰"],
+      "base": ["安息香", "香草", "勞丹脂"]
+    }
+  }
+]
