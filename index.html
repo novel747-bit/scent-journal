@@ -549,7 +549,7 @@
             { canonical: 'Parfums de Marly', aliases: ['parfums de marly', 'pdm', '瑪麗之香'] },
             { canonical: 'Kilian Paris', aliases: ['kilian', 'by kilian', 'kilian paris', '凱利安'] },
             { canonical: 'Ormonde Jayne', aliases: ['ormonde jayne', '歐夢德傑尼'] },
-            { canonical: 'Etat Libre d\'Orange', aliases: ['etat libre dorange', "etat libre d'orange", '解放橘郡'] },
+            { canonical: "Etat Libre d'Orange", aliases: ['etat libre dorange', "etat libre d'orange", '解放橘郡'] },
             { canonical: 'BDK Parfums', aliases: ['bdk', 'bdk parfums'] },
             { canonical: 'Liquides Imaginaires', aliases: ['liquides imaginaires', '幻想之水', '液態創想'] },
             { canonical: 'Laboratorio Olfattivo', aliases: ['laboratorio olfattivo', '嗅覺實驗室'] },
@@ -557,7 +557,7 @@
             { canonical: 'Yves Saint Laurent', aliases: ['ysl', 'yves saint laurent', '聖羅蘭'] },
             { canonical: 'Chloé', aliases: ['chloe', 'chloé', '蔻依'] },
             { canonical: 'Bvlgari', aliases: ['bvlgari', 'bulgari', '寶格麗'] },
-            { canonical: ' Loewe', aliases: ['loewe', '羅意威'] }
+            { canonical: 'Loewe', aliases: ['loewe', '羅意威'] }
         ];
 
         const BUILTIN_PERFUME_ZH_MAP = {
@@ -588,21 +588,21 @@
             'orphéon': '爵夢',
             'philosykos': '希臘無花果',
             'eau des sens': '感官之水',
-            'l\'ombre dans l\'eau': '影中之水',
+            "l'ombre dans l'eau": '影中之水',
             'lombre dans leau': '影中之水',
             'eau rose': '玫瑰之水',
             'eau capitale': '花都之水',
             'eau duelle': '杜耶爾',
-            'tempo': '帕チュ里 Tempo',
+            'tempo': '廣藿香 Tempo',
             'oyedo': '東京',
             'olene': '奧利恩',
-            'l\'eau papier': '紙染之水',
+            "l'eau papier": '紙染之水',
             'leau papier': '紙染之水',
             'blanche': '返璞歸真',
             'gypsy water': '吉普賽之水',
             'mojave ghost': '莫哈維之影',
-            'rose of no man\'s land': '無人區玫瑰',
-            'bal d\'afrique': '熱帶爵士',
+            "rose of no man's land": '無人區玫瑰',
+            "bal d'afrique": '熱帶爵士',
             'la tulipe': '鬱金香',
             'super cedar': '北國之春',
             'young rose': '初生玫瑰',
@@ -657,13 +657,13 @@
             '1957': '1957',
             'sauvage': '曠野之心',
             'miss dior': '花漾迪奧',
-            'j\'adore': '真我宣言',
+            "j'adore": '真我宣言',
             'gris dior': '蒙田大道',
-            'terre d\'hermes': '大地',
-            'terre d\'hermès': '大地',
+            "terre d'hermes": '大地',
+            "terre d'hermès": '大地',
             'un jardin sur le nil': '尼羅河花園',
             'un jardin en mediterranee': '地中海花園',
-            'twilly d\'hermes': '絲意',
+            "twilly d'hermes": '絲意',
             'h24': 'H24',
             'luna': '月亮女神',
             'endymion': '牧羊少年',
@@ -678,7 +678,7 @@
             'aqua universalis': '永恆之水',
             'à la rose': '愛戀玫瑰',
             'a la rose': '愛戀玫瑰',
-            'l\'homme à la rose': '紳士玫瑰',
+            "l'homme à la rose": '紳士玫瑰',
             'lazy sunday morning': '慵懶週末',
             'jazz club': '爵士酒廊',
             'by the fireplace': '壁爐火光',
@@ -695,16 +695,16 @@
             'rose tonnerre': '夜色玫瑰',
             'musc ravageur': '狂野麝香',
             'en passant': '紫丁香',
-            'l\'eau d\'hiver': '冬之水',
+            "l'eau d'hiver": '冬之水',
             'carnal flower': '慾望之花',
             'aventus': '拿破崙之水',
             'silver mountain water': '銀色山泉',
             'green irish tweed': '愛爾蘭之心',
             'millesime imperial': '皇室之水',
             'la fille de berlin': '柏林少女',
-            'l\'orpheline': '孤女',
+            "l'orpheline": '孤女',
             'nuit de cellophane': '八月夜桂花',
-            'passage d\'enfer': '冥府之路',
+            "passage d'enfer": '冥府之路',
             'the yulong': '玉龍茶香',
             'thé yulong': '玉龍茶香',
             'libre': '自由不羈',
@@ -733,10 +733,13 @@
             isFilterOpen: false,
             lastTypedBrand: '',
             currentSuggestions: [],
+            currentBrandCandidates: [],
+            currentFamilyList: [],
 
             init() {
                 this.setupPwaManifest();
                 this.loadFromStorage();
+                this.renderAll();
                 this.loadDatabase();
 
                 document.addEventListener('click', (e) => {
@@ -748,15 +751,23 @@
             },
 
             hasChinese(str) {
-                return /[\u4e00-\u9fa5]/.test(str || '');
+                return /[\u4e00-\u9fa5]/.test(String(str || ''));
             },
 
             hasEnglish(str) {
-                return /[a-zA-Z]/.test(str || '');
+                return /[a-zA-Z]/.test(String(str || ''));
             },
 
             hasBothZhAndEn(str) {
                 return this.hasChinese(str) && this.hasEnglish(str);
+            },
+
+            ensureArray(val) {
+                if (Array.isArray(val)) return val.map(v => String(v || '').trim()).filter(Boolean);
+                if (typeof val === 'string' && val.trim()) {
+                    return val.split(/[,，、/]+/).map(s => s.trim()).filter(Boolean);
+                }
+                return [];
             },
 
             normalizeBrandName(rawBrand) {
@@ -767,26 +778,26 @@
                 
                 for (const rule of BRAND_RULES) {
                     if (rule.aliases.some(alias => lower === alias || lower.includes(alias))) {
-                        return rule.canonical.trim();
+                        return rule.canonical;
                     }
                 }
                 return cleaned;
             },
 
             getBrandAliases(brandName) {
-                const lower = (brandName || '').toLowerCase().trim();
+                const lower = String(brandName || '').toLowerCase().trim();
                 for (const rule of BRAND_RULES) {
-                    if (rule.canonical.trim().toLowerCase() === lower || rule.aliases.some(a => lower.includes(a))) {
-                        return [rule.canonical.trim().toLowerCase(), ...rule.aliases];
+                    if (rule.canonical.toLowerCase() === lower || rule.aliases.some(a => lower.includes(a))) {
+                        return [rule.canonical.toLowerCase(), ...rule.aliases];
                     }
                 }
-                return [lower].filter(Boolean);
+                return lower ? [lower] : [];
             },
 
-            buildBilingualPerfumeName(rawZh, rawEn, rawName, aliases = []) {
-                let zhPart = (rawZh || '').trim();
-                let enPart = (rawEn || '').trim();
-                const baseName = (rawName || '').trim();
+            buildBilingualPerfumeName(rawZh, rawEn, rawName, aliases) {
+                let zhPart = String(rawZh || '').trim();
+                let enPart = String(rawEn || '').trim();
+                const baseName = String(rawName || '').trim();
 
                 if (this.hasBothZhAndEn(baseName) && !zhPart && !enPart) {
                     return baseName;
@@ -800,8 +811,8 @@
                 }
 
                 if (Array.isArray(aliases)) {
-                    for (const a of aliases) {
-                        const cleanA = String(a || '').trim();
+                    for (let i = 0; i < aliases.length; i++) {
+                        const cleanA = String(aliases[i] || '').trim();
                         if (!cleanA) continue;
                         if (!zhPart && this.hasChinese(cleanA)) zhPart = cleanA;
                         if (!enPart && this.hasEnglish(cleanA) && !this.hasChinese(cleanA)) enPart = cleanA;
@@ -816,9 +827,10 @@
                 }
 
                 if (!enPart && zhPart) {
-                    for (const [enKey, zhVal] of Object.entries(BUILTIN_PERFUME_ZH_MAP)) {
-                        if (zhVal === zhPart) {
-                            enPart = enKey.replace(/\b\w/g, c => c.toUpperCase());
+                    const entries = Object.entries(BUILTIN_PERFUME_ZH_MAP);
+                    for (let i = 0; i < entries.length; i++) {
+                        if (entries[i][1] === zhPart) {
+                            enPart = entries[i][0].replace(/\b\w/g, c => c.toUpperCase());
                             break;
                         }
                     }
@@ -827,53 +839,56 @@
                 if (zhPart && enPart) {
                     if (enPart.includes(zhPart)) return enPart;
                     if (zhPart.includes(enPart)) return zhPart;
-                    return `${zhPart} ${enPart}`;
+                    return zhPart + ' ' + enPart;
                 }
                 return zhPart || enPart || baseName;
             },
 
-            upsertCatalogItem(itemData, isInitial = false) {
+            upsertCatalogItem(itemData, isInitial) {
                 const cleanBrand = this.normalizeBrandName(itemData.brand);
-                const cleanName = (itemData.name || '').trim();
+                const cleanName = String(itemData.name || '').trim();
                 if (!cleanBrand || !cleanName) return null;
 
                 const brandAliases = this.getBrandAliases(cleanBrand);
                 const rawKeys = [
                     cleanBrand,
                     cleanName,
-                    ...(brandAliases || []),
-                    ...(itemData.searchKeywords || []),
-                    ...(itemData.aliases || [])
-                ].map(k => String(k || '').trim().toLowerCase()).filter(k => k.length > 0);
+                    ...brandAliases,
+                    ...(Array.isArray(itemData.searchKeywords) ? itemData.searchKeywords : []),
+                    ...(Array.isArray(itemData.aliases) ? itemData.aliases : [])
+                ].map(k => String(k || '').trim().toLowerCase()).filter(Boolean);
 
-                const uniqueKeys = [...new Set(rawKeys)];
+                const uniqueKeys = Array.from(new Set(rawKeys));
+                const cleanBrandLower = cleanBrand.toLowerCase();
+                const cleanNameLower = cleanName.toLowerCase();
 
-                const existingIdx = FRAGRANCE_CATALOG.findIndex(c => {
-                    if (c.brand.toLowerCase() !== cleanBrand.toLowerCase()) return false;
-                    if (c.name.toLowerCase() === cleanName.toLowerCase()) return true;
-                    const cKeys = c.searchKeywords || [];
-                    return uniqueKeys.some(k => k.length >= 3 && k !== cleanBrand.toLowerCase() && !brandAliases.includes(k) && cKeys.includes(k));
-                });
+                let existingIdx = -1;
+                for (let i = 0; i < FRAGRANCE_CATALOG.length; i++) {
+                    const c = FRAGRANCE_CATALOG[i];
+                    if (c.brand.toLowerCase() === cleanBrandLower) {
+                        if (c.name.toLowerCase() === cleanNameLower || c.name.toLowerCase().includes(cleanNameLower) || cleanNameLower.includes(c.name.toLowerCase())) {
+                            existingIdx = i;
+                            break;
+                        }
+                    }
+                }
 
                 if (existingIdx !== -1) {
                     const existing = FRAGRANCE_CATALOG[existingIdx];
                     if (this.hasBothZhAndEn(cleanName) && !this.hasBothZhAndEn(existing.name)) {
                         existing.name = cleanName;
                     }
-                    existing.searchKeywords = [...new Set([...(existing.searchKeywords || []), ...uniqueKeys])];
+                    existing.searchKeywords = Array.from(new Set([...(existing.searchKeywords || []), ...uniqueKeys]));
                     if (itemData.concentration && !existing.concentration) existing.concentration = itemData.concentration;
                     if (itemData.family && !existing.family) existing.family = itemData.family;
-                    if (Array.isArray(itemData.topNotes) && itemData.topNotes.length > 0 && (!existing.topNotes || existing.topNotes.length === 0 || !this.hasChinese(existing.topNotes.join('')))) {
-                        existing.topNotes = itemData.topNotes;
-                    }
-                    if (Array.isArray(itemData.midNotes) && itemData.midNotes.length > 0 && (!existing.midNotes || existing.midNotes.length === 0 || !this.hasChinese(existing.midNotes.join('')))) {
-                        existing.midNotes = itemData.midNotes;
-                    }
-                    if (Array.isArray(itemData.baseNotes) && itemData.baseNotes.length > 0 && (!existing.baseNotes || existing.baseNotes.length === 0 || !this.hasChinese(existing.baseNotes.join('')))) {
-                        existing.baseNotes = itemData.baseNotes;
-                    }
+                    const topArr = this.ensureArray(itemData.topNotes);
+                    const midArr = this.ensureArray(itemData.midNotes);
+                    const baseArr = this.ensureArray(itemData.baseNotes);
+                    if (topArr.length > 0 && (!existing.topNotes || existing.topNotes.length === 0)) existing.topNotes = topArr;
+                    if (midArr.length > 0 && (!existing.midNotes || existing.midNotes.length === 0)) existing.midNotes = midArr;
+                    if (baseArr.length > 0 && (!existing.baseNotes || existing.baseNotes.length === 0)) existing.baseNotes = baseArr;
                     if (isInitial) {
-                        INITIAL_CATALOG_KEYS.add(`${cleanBrand.toLowerCase()}||${existing.name.toLowerCase()}`);
+                        INITIAL_CATALOG_KEYS.add(cleanBrandLower + '||' + existing.name.toLowerCase());
                     }
                     return existing;
                 } else {
@@ -883,13 +898,13 @@
                         searchKeywords: uniqueKeys,
                         concentration: itemData.concentration || 'EDP 淡香精',
                         family: itemData.family || '',
-                        topNotes: itemData.topNotes || [],
-                        midNotes: itemData.midNotes || [],
-                        baseNotes: itemData.baseNotes || []
+                        topNotes: this.ensureArray(itemData.topNotes),
+                        midNotes: this.ensureArray(itemData.midNotes),
+                        baseNotes: this.ensureArray(itemData.baseNotes)
                     };
                     FRAGRANCE_CATALOG.push(newEntry);
                     if (isInitial) {
-                        INITIAL_CATALOG_KEYS.add(`${cleanBrand.toLowerCase()}||${cleanName.toLowerCase()}`);
+                        INITIAL_CATALOG_KEYS.add(cleanBrandLower + '||' + cleanNameLower);
                     }
                     return newEntry;
                 }
@@ -911,7 +926,11 @@
                     if (cachedCatalog) {
                         const parsedCache = JSON.parse(cachedCatalog);
                         if (Array.isArray(parsedCache)) {
-                            parsedCache.forEach(item => this.upsertCatalogItem(item, false));
+                            parsedCache.forEach(item => {
+                                if (item && typeof item === 'object') {
+                                    this.upsertCatalogItem(item, false);
+                                }
+                            });
                         }
                     }
                 } catch (e) {}
@@ -920,47 +939,51 @@
                     const response = await fetch('./fragrances.json');
                     if (response.ok) {
                         const externalData = await response.json();
-                        externalData.forEach(item => {
-                            const brandZh = (item.brand_zh || '').trim();
-                            const brandEn = (item.brand_en || item.brand || '').trim();
-                            const nameZh = (item.name_zh || '').trim();
-                            const nameEn = (item.name_en || item.name || '').trim();
-                            
-                            const displayBrand = this.normalizeBrandName(brandEn || brandZh);
-                            const displayName = this.buildBilingualPerfumeName(nameZh, nameEn, item.name, item.aliases);
-                            
-                            this.upsertCatalogItem({
-                                brand: displayBrand,
-                                name: displayName,
-                                aliases: [brandZh, brandEn, nameZh, nameEn, ...(item.aliases || [])].filter(Boolean),
-                                concentration: item.concentration || 'EDP 淡香精',
-                                family: item.family || '',
-                                topNotes: item.notes?.top || item.topNotes || [],
-                                midNotes: item.notes?.heart || item.midNotes || [],
-                                baseNotes: item.notes?.base || item.baseNotes || []
-                            }, true);
-                        });
+                        if (Array.isArray(externalData)) {
+                            externalData.forEach(item => {
+                                if (!item || typeof item !== 'object') return;
+                                const brandZh = String(item.brand_zh || '').trim();
+                                const brandEn = String(item.brand_en || item.brand || '').trim();
+                                const nameZh = String(item.name_zh || '').trim();
+                                const nameEn = String(item.name_en || item.name || '').trim();
+                                
+                                const displayBrand = this.normalizeBrandName(brandEn || brandZh);
+                                const displayName = this.buildBilingualPerfumeName(nameZh, nameEn, item.name, item.aliases);
+                                
+                                this.upsertCatalogItem({
+                                    brand: displayBrand,
+                                    name: displayName,
+                                    aliases: [brandZh, brandEn, nameZh, nameEn, ...(Array.isArray(item.aliases) ? item.aliases : [])].filter(Boolean),
+                                    concentration: item.concentration || 'EDP 淡香精',
+                                    family: item.family || '',
+                                    topNotes: item.notes?.top || item.topNotes || [],
+                                    midNotes: item.notes?.heart || item.midNotes || [],
+                                    baseNotes: item.notes?.base || item.baseNotes || []
+                                }, true);
+                            });
+                        }
                     }
                 } catch (e) {
                     console.error("載入 fragrances.json 發生錯誤：", e);
+                } finally {
+                    this.perfumes.forEach(p => {
+                        if (!p || typeof p !== 'object') return;
+                        const cleanBrand = this.normalizeBrandName(p.brand || '');
+                        const cleanName = this.buildBilingualPerfumeName('', '', p.name || '', []);
+                        this.upsertCatalogItem({
+                            brand: cleanBrand,
+                            name: cleanName,
+                            aliases: [p.brand, p.name].filter(Boolean),
+                            concentration: p.concentration,
+                            family: p.family,
+                            topNotes: p.topNotes,
+                            midNotes: p.midNotes,
+                            baseNotes: p.baseNotes
+                        }, false);
+                    });
+
+                    this.renderAll();
                 }
-
-                this.perfumes.forEach(p => {
-                    const cleanBrand = this.normalizeBrandName(p.brand || '');
-                    const cleanName = this.buildBilingualPerfumeName('', '', p.name, []);
-                    this.upsertCatalogItem({
-                        brand: cleanBrand,
-                        name: cleanName,
-                        aliases: [p.brand, p.name].filter(Boolean),
-                        concentration: p.concentration,
-                        family: p.family,
-                        topNotes: p.topNotes || [],
-                        midNotes: p.midNotes || [],
-                        baseNotes: p.baseNotes || []
-                    }, false);
-                });
-
-                this.renderAll();
             },
 
             switchTab(tabId) {
@@ -1028,7 +1051,7 @@
                         background_color: "#FAF7F2",
                         theme_color: "#1E1B18",
                         icons: [{
-                            src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#1E1B18"/><rect x="74" y="30" width="44" height="22" rx="6" fill="#B58E58"/><rect x="50" y="60" width="92" height="102" rx="18" fill="#FAF7F2" stroke="#B58E58" stroke-width="6"/><rect x="68" y="84" width="56" height="54" rx="6" fill="#F2ECE1"/></svg>`),
+                            src: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#1E1B18"/><rect x="74" y="30" width="44" height="22" rx="6" fill="#B58E58"/><rect x="50" y="60" width="92" height="102" rx="18" fill="#FAF7F2" stroke="#B58E58" stroke-width="6"/><rect x="68" y="84" width="56" height="54" rx="6" fill="#F2ECE1"/></svg>'),
                             sizes: "192x192",
                             type: "image/svg+xml"
                         }]
@@ -1046,22 +1069,29 @@
                     const savedPerfumes = localStorage.getItem(STORAGE_KEYS.PERFUMES);
                     const savedLogs = localStorage.getItem(STORAGE_KEYS.LOGS);
                     const rawPerfumes = savedPerfumes ? JSON.parse(savedPerfumes) : [];
-                    let modified = false;
+                    const rawLogs = savedLogs ? JSON.parse(savedLogs) : [];
 
-                    this.perfumes = rawPerfumes.map(p => {
-                        const normBrand = this.normalizeBrandName(p.brand || '');
-                        const normName = this.buildBilingualPerfumeName('', '', p.name || '', []);
-                        if (normBrand !== p.brand || normName !== p.name) {
-                            modified = true;
-                        }
-                        return { ...p, brand: normBrand, name: normName };
-                    });
-
-                    this.logs = savedLogs ? JSON.parse(savedLogs) : [];
-                    if (modified) {
-                        this.savePerfumesToStorage();
+                    if (Array.isArray(rawPerfumes)) {
+                        this.perfumes = rawPerfumes.filter(p => p && typeof p === 'object').map(p => ({
+                            ...p,
+                            id: p.id || ('p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+                            brand: this.normalizeBrandName(p.brand || ''),
+                            name: this.buildBilingualPerfumeName('', '', p.name || '', []),
+                            concentration: String(p.concentration || ''),
+                            family: String(p.family || ''),
+                            topNotes: this.ensureArray(p.topNotes),
+                            midNotes: this.ensureArray(p.midNotes),
+                            baseNotes: this.ensureArray(p.baseNotes),
+                            status: p.status || 'owned',
+                            wornCount: Number(p.wornCount) || 0
+                        }));
+                    } else {
+                        this.perfumes = [];
                     }
+
+                    this.logs = Array.isArray(rawLogs) ? rawLogs.filter(l => l && typeof l === 'object') : [];
                 } catch (e) {
+                    console.error("讀取 LocalStorage 發生錯誤：", e);
                     this.perfumes = [];
                     this.logs = [];
                 }
@@ -1100,10 +1130,10 @@
                 this.showToast('API 金鑰已安全儲存於本機');
             },
 
-            populateBrandDropdown(filterText = '') {
+            populateBrandDropdown(filterText) {
                 const listEl = document.getElementById('brand-custom-list');
                 const allKnownBrands = [
-                    ...BRAND_RULES.map(r => r.canonical.trim()),
+                    ...BRAND_RULES.map(r => r.canonical),
                     ...FRAGRANCE_CATALOG.map(c => c.brand)
                 ];
 
@@ -1127,18 +1157,29 @@
                     });
                 }
 
+                this.currentBrandCandidates = candidateBrands;
+
                 if (candidateBrands.length === 0) {
-                    listEl.innerHTML = `<li class="px-3.5 py-2 text-muted text-xs">無相符品牌，可直接輸入建立新品牌</li>`;
+                    listEl.innerHTML = '<li class="px-3.5 py-2 text-muted text-xs">無相符品牌，可直接輸入建立新品牌</li>';
                 } else {
-                    listEl.innerHTML = candidateBrands.map(b => `
-                        <li class="px-3.5 py-2 hover:bg-goldLight/40 cursor-pointer text-ink transition-colors" onclick="app.selectBrand('${this.escapeHtml(b).replace(/'/g, "\\'")}')">
-                            ${this.escapeHtml(b)}
-                        </li>
-                    `).join('');
+                    listEl.innerHTML = candidateBrands.map((b, idx) => 
+                        '<li class="px-3.5 py-2 hover:bg-goldLight/40 cursor-pointer text-ink transition-colors" onclick="app.selectBrandByIndex(' + idx + ')">' +
+                            this.escapeHtml(b) +
+                        '</li>'
+                    ).join('');
                 }
             },
 
-            showBrandDropdown(showAll = false) {
+            selectBrandByIndex(idx) {
+                const brandStr = this.currentBrandCandidates[idx];
+                if (!brandStr) return;
+                const inputEl = document.getElementById('form-brand');
+                inputEl.value = this.normalizeBrandName(brandStr);
+                document.getElementById('brand-custom-list').classList.add('hidden');
+                this.onBrandInput(true);
+            },
+
+            showBrandDropdown(showAll) {
                 const inputVal = showAll ? '' : document.getElementById('form-brand').value.trim();
                 this.populateBrandDropdown(inputVal);
                 document.getElementById('brand-custom-list').classList.remove('hidden');
@@ -1154,14 +1195,7 @@
                 }
             },
 
-            selectBrand(brandStr) {
-                const inputEl = document.getElementById('form-brand');
-                inputEl.value = this.normalizeBrandName(brandStr);
-                document.getElementById('brand-custom-list').classList.add('hidden');
-                this.onBrandInput(true);
-            },
-
-            onBrandInput(fromSelection = false) {
+            onBrandInput(fromSelection) {
                 const brandInput = document.getElementById('form-brand').value;
 
                 if (this.lastTypedBrand !== undefined && this.lastTypedBrand !== brandInput) {
@@ -1191,11 +1225,11 @@
                 if (this.currentSuggestions.length === 0) {
                     chipsContainer.innerHTML = '<span class="text-[11px] text-muted py-1 bg-stone-100 px-2 rounded">查無該品牌候選香水，請確認金鑰或直接輸入香水名稱查找</span>';
                 } else {
-                    chipsContainer.innerHTML = this.currentSuggestions.map((m, idx) => `
-                        <button type="button" onclick="app.applySuggestionByIndex(${idx})" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all text-left">
-                            ${this.escapeHtml(m.name)}
-                        </button>
-                    `).join('');
+                    chipsContainer.innerHTML = this.currentSuggestions.map((m, idx) => 
+                        '<button type="button" onclick="app.applySuggestionByIndex(' + idx + ')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all text-left">' +
+                            this.escapeHtml(m.name) +
+                        '</button>'
+                    ).join('');
                 }
             },
 
@@ -1203,7 +1237,7 @@
                 const item = this.currentSuggestions[idx];
                 if (!item) return;
                 this.fillFragranceFields(item);
-                this.showLookupStatus(`已帶入「${item.brand} - ${item.name}」的濃度與前中後調`, false);
+                this.showLookupStatus('已帶入「' + item.brand + ' - ' + item.name + '」的濃度與前中後調', false);
             },
 
             getLocalBrandMatches(brandStr) {
@@ -1228,7 +1262,8 @@
                 const bilingualLocalMatches = [];
                 const seenNames = new Set();
 
-                for (const m of localMatches) {
+                for (let i = 0; i < localMatches.length; i++) {
+                    const m = localMatches[i];
                     if (this.hasBothZhAndEn(m.name) && !seenNames.has(m.name.toLowerCase())) {
                         seenNames.add(m.name.toLowerCase());
                         bilingualLocalMatches.push(m);
@@ -1238,7 +1273,7 @@
 
                 if (bilingualLocalMatches.length >= 5) {
                     this.renderBrandSuggestionChips(bilingualLocalMatches);
-                    this.showLookupStatus(`已從本機資料庫列出「${canonicalBrand}」的 5 款中英雙語候選香水，點選即可帶入`, false);
+                    this.showLookupStatus('已從本機資料庫列出「' + canonicalBrand + '」的 5 款中英雙語候選香水，點選即可帶入', false);
                     return;
                 }
 
@@ -1246,24 +1281,24 @@
                 if (!apiKey) {
                     if (bilingualLocalMatches.length > 0) {
                         this.renderBrandSuggestionChips(bilingualLocalMatches);
-                        this.showLookupStatus(`已列出本機雙語候選；如需完整 5 款請先設定右上角金鑰`, false);
+                        this.showLookupStatus('已列出本機雙語候選；如需完整 5 款請先設定右上角金鑰', false);
                     } else {
                         this.showToast('本機無雙語候選資料，請點擊右上角「設定金鑰」以啟用 AI 查找', 'error');
                     }
                     return;
                 }
 
-                this.showLookupStatus(`正在查找並翻譯「${canonicalBrand}」的 5 款代表性熱門香水...`, true);
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                this.showLookupStatus('正在查找並翻譯「' + canonicalBrand + '」的 5 款代表性熱門香水...', true);
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=' + apiKey;
                 
                 const localEnglishNamesHint = localMatches.slice(0, 5).map(m => m.name).join('、');
-                const prompt = `請列出香水品牌「${canonicalBrand}」最知名、最熱門的 5 款代表性香水及其完整香調表${localEnglishNamesHint ? `（可優先參考：${localEnglishNamesHint}）` : ''}。
-                【嚴格規定】
-                1. name_zh 必填：該香水的「台灣正體中文譯名」（僅限中文，禁止包含英文）。
-                2. name_en 必填：該香水的「官方英文原名」（僅限英文，禁止包含中文）。
-                3. brand 必填：官方標準英文品牌名（禁止包含代理商字眼）。
-                4. family 與 topNotes、midNotes、baseNotes 必須全部使用「台灣正體中文」。
-                5. 只回傳純 JSON 陣列。`;
+                const prompt = '請列出香水品牌「' + canonicalBrand + '」最知名、最熱門的 5 款代表性香水及其完整香調表' + (localEnglishNamesHint ? '（可優先參考：' + localEnglishNamesHint + '）' : '') + '。\n' +
+                '【嚴格規定】\n' +
+                '1. name_zh 必填：該香水的「台灣正體中文譯名」（僅限中文，禁止包含英文）。\n' +
+                '2. name_en 必填：該香水的「官方英文原名」（僅限英文，禁止包含中文）。\n' +
+                '3. brand 必填：官方標準英文品牌名（禁止包含代理商字眼）。\n' +
+                '4. family 與 topNotes、midNotes、baseNotes 必須全部使用「台灣正體中文」。\n' +
+                '5. 只回傳純 JSON 陣列。';
 
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
@@ -1299,7 +1334,7 @@
                     
                     if (!response.ok) throw new Error('Network error');
                     const result = await response.json();
-                    let text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
                     
                     if (text) {
                         const jsonMatch = text.match(/\[[\s\S]*\]/);
@@ -1327,7 +1362,7 @@
                                 });
                                 this.saveCatalogCache();
                                 this.renderBrandSuggestionChips(finalFive);
-                                this.showLookupStatus(`已列出「${canonicalBrand}」的 5 款中英雙語熱門候選，點選即可帶入`, false);
+                                this.showLookupStatus('已列出「' + canonicalBrand + '」的 5 款中英雙語熱門候選，點選即可帶入', false);
                                 return;
                             }
                         }
@@ -1335,7 +1370,7 @@
                     throw new Error('Empty list or JSON parse failed');
                 } catch (e) {
                     console.error("熱門清單檢索錯誤:", e);
-                    this.showLookupStatus(`搜尋失敗，請確認 API 金鑰是否有效`, false);
+                    this.showLookupStatus('搜尋失敗，請確認 API 金鑰是否有效', false);
                 }
             },
 
@@ -1349,7 +1384,7 @@
                     if (options.includes(data.concentration)) {
                         concSelect.value = data.concentration;
                     } else {
-                        const upper = data.concentration.toUpperCase();
+                        const upper = String(data.concentration).toUpperCase();
                         if (upper.includes('EDT')) concSelect.value = "EDT 淡香水";
                         else if (upper.includes('EDC') || upper.includes('COLOGNE')) concSelect.value = "EDC 古龍水";
                         else if (upper.includes('PARFUM') && !upper.includes('EDP')) concSelect.value = "Parfum 香精";
@@ -1367,7 +1402,7 @@
                 if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
             },
 
-            showLookupStatus(msg, isLoading = false) {
+            showLookupStatus(msg, isLoading) {
                 const box = document.getElementById('lookup-status');
                 const spinner = document.getElementById('lookup-spinner');
                 const text = document.getElementById('lookup-status-text');
@@ -1381,10 +1416,1028 @@
                 const canonicalBrand = this.normalizeBrandName(brandStr);
                 const normBrand = canonicalBrand.toLowerCase();
                 const brandAliases = this.getBrandAliases(canonicalBrand);
-                const normName = nameStr.trim().toLowerCase();
+                const normName = String(nameStr || '').trim().toLowerCase();
+                if (!normName) return null;
 
                 const candidates = FRAGRANCE_CATALOG.filter(item => {
                     const itemBrandLower = item.brand.toLowerCase();
                     const keys = item.searchKeywords || [];
                     const bMatch = !normBrand ||
-                                   itemBrandLower === normBrand
+                                   itemBrandLower === normBrand ||
+                                   itemBrandLower.includes(normBrand) ||
+                                   normBrand.includes(itemBrandLower) ||
+                                   brandAliases.some(a => keys.includes(a));
+                    if (!bMatch) return false;
+
+                    const itemNameLower = item.name.toLowerCase();
+                    if (itemNameLower === normName || itemNameLower.includes(normName)) return true;
+                    if (normName.length >= 4 && normName.includes(itemNameLower)) return true;
+
+                    return keys.some(k => {
+                        if (!k || k === itemBrandLower || brandAliases.includes(k)) return false;
+                        if (k === normName || k.includes(normName)) return true;
+                        if (k.length >= 4 && normName.includes(k)) return true;
+                        return false;
+                    });
+                });
+
+                if (candidates.length === 0) return null;
+                const bilingualCandidate = candidates.find(c => this.hasBothZhAndEn(c.name));
+                return bilingualCandidate || candidates[0];
+            },
+
+            async lookupFragranceInfo(forceOverwrite) {
+                const rawBrand = document.getElementById('form-brand').value.trim();
+                const rawName = document.getElementById('form-name').value.trim();
+
+                if (!rawBrand) {
+                    this.showToast('請先輸入或選擇品牌名稱', 'error');
+                    return false;
+                }
+
+                const brand = this.normalizeBrandName(rawBrand);
+                document.getElementById('form-brand').value = brand;
+                document.getElementById('brand-custom-list').classList.add('hidden');
+
+                if (!rawName) {
+                    await this.fetchOnlineBrandSuggestions(brand);
+                    return true;
+                }
+
+                const localMatch = this.findLocalMatch(brand, rawName);
+
+                if (localMatch && this.hasBothZhAndEn(localMatch.name)) {
+                    this.fillFragranceFields(localMatch);
+                    this.showLookupStatus('已從本機資料庫帶入「' + localMatch.brand + ' - ' + localMatch.name + '」', false);
+                    return true;
+                }
+
+                const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
+                if (!apiKey) {
+                    if (localMatch) {
+                        this.fillFragranceFields(localMatch);
+                        this.showLookupStatus('已帶入本機資料，但缺中文譯名，請設定金鑰以自動轉換為中英雙語', false);
+                        return true;
+                    }
+                    this.showToast('本機無此紀錄，請點擊右上角「設定金鑰」以啟用 AI 查找與中英雙語轉換', 'error');
+                    return false;
+                }
+
+                this.showLookupStatus('正在查找並轉換為「中文 + 英文」標準名稱與香調表...', true);
+
+                const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=' + apiKey;
+                
+                const prompt = '使用者輸入了品牌「' + brand + '」與香水名稱「' + rawName + '」。請尋找該香水資訊。\n' +
+                '【嚴格規定】\n' +
+                '1. name_zh 必填：該香水的「台灣正體中文譯名」（僅限繁體中文，絕對不可包含英文字母）。\n' +
+                '2. name_en 必填：該香水的「官方英文原名」（僅限英文，絕對不可包含中文字）。\n' +
+                '3. brand 必填：官方標準品牌名（禁止包含代理商字眼）。\n' +
+                '4. concentration（如 EDP 淡香精、EDT 淡香水）、family（主香調）與 topNotes、midNotes、baseNotes（前中後調香材）一律使用「台灣正體中文」。\n' +
+                '5. 只回傳純 JSON 物件。';
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                brand: { type: "STRING" },
+                                name_zh: { type: "STRING" },
+                                name_en: { type: "STRING" },
+                                concentration: { type: "STRING" },
+                                family: { type: "STRING" },
+                                topNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                midNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                baseNotes: { type: "ARRAY", items: { type: "STRING" } }
+                            },
+                            required: ["brand", "name_zh", "name_en", "concentration", "family", "topNotes", "midNotes", "baseNotes"]
+                        }
+                    }
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error('Network error');
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (text) {
+                        const jsonMatch = text.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            const data = JSON.parse(jsonMatch[0]);
+                            const cleanBrand = this.normalizeBrandName(data.brand || brand);
+                            const combinedName = this.buildBilingualPerfumeName(data.name_zh, data.name_en, rawName, []);
+
+                            const savedEntry = this.upsertCatalogItem({
+                                brand: cleanBrand,
+                                name: combinedName,
+                                aliases: [rawBrand, rawName, data.name_zh, data.name_en, cleanBrand].filter(Boolean),
+                                concentration: localMatch?.concentration || data.concentration,
+                                family: (localMatch?.family && this.hasChinese(localMatch.family)) ? localMatch.family : data.family,
+                                topNotes: (localMatch?.topNotes?.length && this.hasChinese(localMatch.topNotes.join(''))) ? localMatch.topNotes : (data.topNotes || []),
+                                midNotes: (localMatch?.midNotes?.length && this.hasChinese(localMatch.midNotes.join(''))) ? localMatch.midNotes : (data.midNotes || []),
+                                baseNotes: (localMatch?.baseNotes?.length && this.hasChinese(localMatch.baseNotes.join(''))) ? localMatch.baseNotes : (data.baseNotes || [])
+                            }, false);
+
+                            this.saveCatalogCache();
+                            this.fillFragranceFields(savedEntry);
+                            this.showLookupStatus('已成功轉換並帶入「' + savedEntry.brand + ' - ' + savedEntry.name + '」', false);
+                            return true;
+                        }
+                    }
+                    throw new Error('Empty result or JSON parse failed');
+                } catch (e) {
+                    console.error("AI 解析錯誤:", e);
+                    this.showLookupStatus('未能找到該香水，請確認名稱或金鑰設定', false);
+                    return false;
+                }
+            },
+
+            setWardrobeMode(mode) {
+                this.wardrobeMode = mode;
+                this.selectedFamily = 'all';
+                this.updateWardrobeModeUI();
+                this.renderFamilyFilterBar();
+                this.updateCompactButtonsState();
+                this.renderWardrobe();
+            },
+
+            toggleSearchBox() {
+                this.isSearchOpen = !this.isSearchOpen;
+                const box = document.getElementById('collapsible-search-box');
+                if (this.isSearchOpen) {
+                    box.classList.remove('hidden');
+                    setTimeout(() => document.getElementById('search-input')?.focus(), 50);
+                } else {
+                    box.classList.add('hidden');
+                    const input = document.getElementById('search-input');
+                    if (input && input.value) {
+                        input.value = '';
+                        this.renderWardrobe();
+                    }
+                }
+                this.updateCompactButtonsState();
+            },
+
+            toggleFilterPanel() {
+                this.isFilterOpen = !this.isFilterOpen;
+                const box = document.getElementById('collapsible-filter-box');
+                if (this.isFilterOpen) box.classList.remove('hidden');
+                else box.classList.add('hidden');
+                this.updateCompactButtonsState();
+            },
+
+            updateCompactButtonsState() {
+                const searchBtn = document.getElementById('btn-toggle-search');
+                const filterBtn = document.getElementById('btn-toggle-filter');
+                const filterLabel = document.getElementById('filter-btn-label');
+                
+                const hasQuery = (document.getElementById('search-input')?.value || '').trim().length > 0;
+                const hasFamily = this.selectedFamily !== 'all';
+
+                if (searchBtn) {
+                    searchBtn.className = (this.isSearchOpen || hasQuery) 
+                        ? 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm'
+                        : 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
+                }
+                if (filterBtn) {
+                    filterBtn.className = (this.isFilterOpen || hasFamily)
+                        ? 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm'
+                        : 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
+                }
+                if (filterLabel) filterLabel.textContent = hasFamily ? this.selectedFamily : '香調分類';
+            },
+
+            updateWardrobeModeUI() {
+                const colBtn = document.getElementById('mode-btn-collection');
+                const wishBtn = document.getElementById('mode-btn-wishlist');
+                const statusSelect = document.getElementById('filter-status');
+                const colCountEl = document.getElementById('badge-count-collection');
+                const wishCountEl = document.getElementById('badge-count-wishlist');
+
+                const colCount = this.perfumes.filter(p => p.status === 'owned' || p.status === 'sample').length;
+                const wishCount = this.perfumes.filter(p => p.status === 'wishlist').length;
+                
+                if (colCountEl) colCountEl.textContent = colCount;
+                if (wishCountEl) wishCountEl.textContent = wishCount;
+
+                [colBtn, wishBtn].forEach(b => {
+                    if (b) b.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-muted hover:text-ink flex items-center gap-1.5';
+                });
+                [colCountEl, wishCountEl].forEach(e => {
+                    if (e) e.className = 'px-1.5 py-0.5 rounded-full text-[11px] bg-stone-200 text-muted';
+                });
+
+                if (this.wardrobeMode === 'collection') {
+                    if (colBtn) colBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-ink text-paper shadow-sm flex items-center gap-1.5';
+                    if (colCountEl) colCountEl.className = 'px-1.5 py-0.5 rounded-full text-[11px] bg-white/20 text-paper';
+                    if (statusSelect) statusSelect.classList.remove('hidden');
+                } else {
+                    if (wishBtn) wishBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-ink text-paper shadow-sm flex items-center gap-1.5';
+                    if (wishCountEl) wishCountEl.className = 'px-1.5 py-0.5 rounded-full text-[11px] bg-white/20 text-paper';
+                    if (statusSelect) statusSelect.classList.add('hidden');
+                }
+            },
+
+            renderFamilyFilterBar() {
+                const container = document.getElementById('family-filter-bar');
+                if (!container) return;
+                const basePool = this.perfumes.filter(p => {
+                    if (this.wardrobeMode === 'wishlist') return p.status === 'wishlist';
+                    return p.status === 'owned' || p.status === 'sample';
+                });
+
+                const dynamicFamilies = Array.from(new Set([...basePool.map(p => p.family).filter(Boolean), ...BASE_FAMILIES]));
+                const families = ['all', ...dynamicFamilies];
+                this.currentFamilyList = families;
+
+                container.innerHTML = families.map((fam, idx) => {
+                    const isActive = this.selectedFamily === fam;
+                    const label = fam === 'all' ? '全部香調' : fam;
+                    const count = fam === 'all' ? basePool.length : basePool.filter(p => p.family === fam).length;
+                    const activeClass = isActive ? 'bg-ink text-paper border-ink shadow-sm' : 'bg-paper text-muted border-stone-200 hover:border-gold hover:text-ink';
+                    const badgeClass = isActive ? 'bg-white/20 text-paper' : 'bg-cream text-muted';
+                    
+                    return '<button type="button" onclick="app.setFamilyFilterByIndex(' + idx + ')" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all flex items-center gap-1 border ' + activeClass + '">' +
+                        '<span>' + this.escapeHtml(label) + '</span>' +
+                        '<span class="px-1.5 py-0.5 rounded-full text-[10px] ' + badgeClass + '">' + count + '</span>' +
+                    '</button>';
+                }).join('');
+            },
+
+            setFamilyFilterByIndex(idx) {
+                const fam = this.currentFamilyList[idx] || 'all';
+                this.setFamilyFilter(fam);
+            },
+
+            setFamilyFilter(fam) {
+                this.selectedFamily = fam;
+                this.renderFamilyFilterBar();
+                this.updateCompactButtonsState();
+                this.renderWardrobe();
+            },
+
+            clearSearch() {
+                document.getElementById('search-input').value = '';
+                this.updateCompactButtonsState();
+                this.renderWardrobe();
+            },
+
+            getFilteredPerfumes() {
+                const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
+                const statusFilter = document.getElementById('filter-status')?.value || 'all';
+                const sortBy = document.getElementById('sort-by')?.value || 'newest';
+                const clearBtn = document.getElementById('clear-search-btn');
+
+                if (clearBtn) clearBtn.classList.toggle('hidden', query.length === 0);
+                this.updateCompactButtonsState();
+
+                const list = this.perfumes.filter(p => {
+                    if (this.wardrobeMode === 'wishlist') {
+                        if (p.status !== 'wishlist') return false;
+                    } else {
+                        if (p.status === 'wishlist' || p.status === 'empty') return false;
+                        if (statusFilter !== 'all' && p.status !== statusFilter) return false;
+                    }
+
+                    if (this.selectedFamily !== 'all' && p.family !== this.selectedFamily) return false;
+
+                    if (query) {
+                        const allNotes = [...this.ensureArray(p.topNotes), ...this.ensureArray(p.midNotes), ...this.ensureArray(p.baseNotes)].join(' ').toLowerCase();
+                        const bAliases = this.getBrandAliases(p.brand).join(' ');
+                        const matchName = String(p.name || '').toLowerCase().includes(query);
+                        const matchBrand = String(p.brand || '').toLowerCase().includes(query) || bAliases.includes(query);
+                        const matchNotes = allNotes.includes(query);
+                        const matchLocation = (p.status === 'owned' || p.status === 'sample') && String(p.purchaseLocation || '').toLowerCase().includes(query);
+                        return matchName || matchBrand || matchNotes || matchLocation;
+                    }
+                    return true;
+                });
+
+                list.sort((a, b) => {
+                    if (sortBy === 'worn') return (b.wornCount || 0) - (a.wornCount || 0);
+                    if (sortBy === 'brand') return String(a.brand || '').localeCompare(String(b.brand || ''), 'zh-Hant');
+                    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+                });
+
+                return list;
+            },
+
+            getBottleSvg(family, concentration) {
+                const colors = getFamilyStyle(family);
+                const shortConc = String(concentration || 'EDP').split(' ')[0];
+                return '<div class="w-12 h-16 rounded-xl flex items-center justify-center shrink-0 border border-stone-200/80 shadow-inner" style="background-color: ' + colors.bg + '">' +
+                    '<svg viewBox="0 0 40 56" class="w-9 h-12" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                        '<rect x="15" y="4" width="10" height="6" rx="1.5" fill="' + colors.accent + '" />' +
+                        '<rect x="17" y="10" width="6" height="4" fill="#78716C" />' +
+                        '<rect x="8" y="14" width="24" height="36" rx="5" fill="#FAF7F2" stroke="' + colors.accent + '" stroke-width="1.8"/>' +
+                        '<rect x="12" y="23" width="16" height="16" rx="1.5" fill="' + colors.bg + '" stroke="' + colors.accent + '" stroke-width="1"/>' +
+                        '<text x="20" y="33" text-anchor="middle" fill="' + colors.accent + '" font-size="5.5" font-weight="bold" font-family="serif">' + this.escapeHtml(shortConc) + '</text>' +
+                    '</svg>' +
+                '</div>';
+            },
+
+            getStatusBadge(status) {
+                if (status === 'owned') return '';
+                if (status === 'sample') return '<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-950/10 text-amber-900 font-medium">試香 / 分裝</span>';
+                if (status === 'empty') return '<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-stone-500/10 text-stone-600 font-medium">已用完空瓶</span>';
+                return '<span class="text-[11px] px-2.5 py-0.5 rounded-full bg-stone-200 text-stone-700 font-medium">願望清單</span>';
+            },
+
+            renderWardrobe() {
+                const grid = document.getElementById('perfume-grid');
+                const countLabel = document.getElementById('wardrobe-count-label');
+                if (!grid || !countLabel) return;
+                const filtered = this.getFilteredPerfumes();
+                const isWishlist = this.wardrobeMode === 'wishlist';
+
+                if (isWishlist) countLabel.textContent = '願望清單：' + filtered.length + ' 款';
+                else {
+                    const ownedCount = filtered.filter(p => p.status === 'owned').length;
+                    const sampleCount = filtered.filter(p => p.status === 'sample').length;
+                    countLabel.textContent = '正裝 ' + ownedCount + ' 支 · 試香 / 分裝 ' + sampleCount + ' 支';
+                }
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full bg-white/70 border border-dashed border-stone-300 rounded-2xl p-12 text-center space-y-3">' +
+                        '<div class="w-12 h-12 rounded-full bg-cream mx-auto flex items-center justify-center text-gold">' +
+                            '<i class="ph ph-flask text-2xl"></i>' +
+                        '</div>' +
+                        '<div class="space-y-1">' +
+                            '<h3 class="font-editorial text-lg font-bold text-ink">' + (isWishlist ? '尚無願望清單紀錄' : '尚無香水收藏紀錄') + '</h3>' +
+                            '<p class="text-xs text-muted">點擊右上角「新增香水」建立第一筆紀錄</p>' +
+                        '</div>' +
+                    '</div>';
+                    return;
+                }
+
+                grid.innerHTML = filtered.map(p => {
+                    const famColor = getFamilyStyle(p.family);
+                    const topArr = this.ensureArray(p.topNotes);
+                    const midArr = this.ensureArray(p.midNotes);
+                    const baseArr = this.ensureArray(p.baseNotes);
+                    const topStr = topArr.length ? topArr.join('、') : '—';
+                    const midStr = midArr.length ? midArr.join('、') : '—';
+                    const baseStr = baseArr.length ? baseArr.join('、') : '—';
+                    const statusBadge = this.getStatusBadge(p.status);
+                    const safeId = this.escapeHtml(p.id);
+
+                    return '<article class="bg-white border border-stone-200/90 rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm hover:shadow-md hover:border-gold/60 transition-all group">' +
+                        '<div class="space-y-3.5">' +
+                            '<div class="flex items-start justify-between gap-3">' +
+                                '<div class="flex items-start gap-3 min-w-0 cursor-pointer" onclick="app.openDetailModal(\'' + safeId + '\')">' +
+                                    this.getBottleSvg(p.family, p.concentration) +
+                                    '<div class="min-w-0">' +
+                                        '<div class="flex items-center gap-1.5 flex-wrap">' +
+                                            '<span class="text-[11px] font-semibold uppercase tracking-wider text-muted">' + this.escapeHtml(p.brand) + '</span>' +
+                                            statusBadge +
+                                        '</div>' +
+                                        '<h3 class="font-editorial text-lg font-bold text-ink truncate group-hover:text-gold transition-colors">' + this.escapeHtml(p.name) + '</h3>' +
+                                        '<div class="flex items-center gap-1.5 mt-1 flex-wrap">' +
+                                            (p.concentration ? '<span class="text-[11px] text-muted">' + this.escapeHtml(p.concentration) + '</span>' : '') +
+                                            (p.family ? '<span class="text-[11px] px-2 py-0.5 rounded-full border ' + famColor.badge + '">' + this.escapeHtml(p.family) + '</span>' : '') +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="flex items-center gap-1 shrink-0">' +
+                                    '<button onclick="app.openPerfumeModal(\'' + safeId + '\')" title="編輯" class="w-7 h-7 rounded-lg text-muted hover:text-ink hover:bg-cream flex items-center justify-center transition-colors">' +
+                                        '<i class="ph ph-pencil-simple text-sm"></i>' +
+                                    '</button>' +
+                                    '<button onclick="app.confirmDeletePerfume(\'' + safeId + '\')" title="刪除" class="w-7 h-7 rounded-lg text-muted hover:text-rose hover:bg-rose/10 flex items-center justify-center transition-colors">' +
+                                        '<i class="ph ph-trash text-sm"></i>' +
+                                    '</button>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div onclick="app.openDetailModal(\'' + safeId + '\')" class="bg-paper/80 border border-stone-200/70 rounded-xl p-3 space-y-1.5 text-xs cursor-pointer">' +
+                                '<div class="flex items-baseline gap-2">' +
+                                    '<span class="text-[11px] font-medium text-muted shrink-0 w-9">前調</span>' +
+                                    '<span class="text-ink truncate">' + this.escapeHtml(topStr) + '</span>' +
+                                '</div>' +
+                                '<div class="flex items-baseline gap-2">' +
+                                    '<span class="text-[11px] font-medium text-muted shrink-0 w-9">中調</span>' +
+                                    '<span class="text-ink truncate">' + this.escapeHtml(midStr) + '</span>' +
+                                '</div>' +
+                                '<div class="flex items-baseline gap-2">' +
+                                    '<span class="text-[11px] font-medium text-muted shrink-0 w-9">後調</span>' +
+                                    '<span class="text-ink truncate">' + this.escapeHtml(baseStr) + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="pt-3 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">' +
+                            '<div class="text-muted flex items-center gap-2 flex-wrap min-w-0">' +
+                                (p.volume ? '<span>' + this.escapeHtml(p.volume) + 'ml</span>' : '') +
+                                ((p.status !== 'wishlist' && p.price) ? '<span>· NT$' + Number(p.price).toLocaleString() + '</span>' : '') +
+                                ((p.status !== 'wishlist' && p.purchaseLocation) ? '<span class="truncate max-w-[130px]" title="' + this.escapeHtml(p.purchaseLocation) + '">· <i class="ph ph-map-pin text-gold"></i> ' + this.escapeHtml(p.purchaseLocation) + '</span>' : '') +
+                            '</div>' +
+                            '<div class="flex items-center gap-1.5 shrink-0">' +
+                                (p.status !== 'wishlist' ? 
+                                    '<button onclick="app.markAsEmpty(\'' + safeId + '\')" title="標記為已用完空瓶" class="px-2.5 py-1 rounded-lg border border-stone-200 text-muted hover:text-ink hover:border-stone-400 text-[11px] font-medium transition-all">已用完</button>' +
+                                    '<button onclick="app.quickWear(\'' + safeId + '\')" class="px-2.5 py-1 rounded-lg bg-cream hover:bg-goldLight text-ink text-[11px] font-medium transition-all flex items-center gap-1">' +
+                                        '<i class="ph ph-spray-bottle text-gold"></i> <span>穿香 (' + (p.wornCount || 0) + ')</span>' +
+                                    '</button>'
+                                : 
+                                    '<button onclick="app.openPerfumeModal(\'' + safeId + '\')" class="px-2.5 py-1 rounded-lg bg-cream hover:bg-goldLight text-ink text-[11px] font-medium transition-all">編輯狀態</button>'
+                                ) +
+                            '</div>' +
+                        '</div>' +
+                    '</article>';
+                }).join('');
+            },
+
+            clearPerfumeForm() {
+                document.getElementById('perfume-form').reset();
+                document.getElementById('form-id').value = '';
+                document.getElementById('brand-quick-suggestions').classList.add('hidden');
+                document.getElementById('lookup-status').classList.add('hidden');
+                this.lastTypedBrand = '';
+                this.currentSuggestions = [];
+                document.getElementById('brand-custom-list').classList.add('hidden');
+            },
+
+            toggleLocationFieldByStatus() {
+                const status = document.getElementById('form-status').value;
+                const priceWrapper = document.getElementById('form-price-wrapper');
+                const locWrapper = document.getElementById('form-location-wrapper');
+                
+                if (status === 'wishlist') {
+                    priceWrapper.classList.add('hidden');
+                    locWrapper.classList.add('hidden');
+                } else {
+                    priceWrapper.classList.remove('hidden');
+                    locWrapper.classList.remove('hidden');
+                }
+            },
+
+            openPerfumeModal(editId) {
+                const modal = document.getElementById('perfume-modal');
+                const title = document.getElementById('modal-form-title');
+                this.clearPerfumeForm();
+
+                if (editId) {
+                    const p = this.perfumes.find(item => item.id === editId);
+                    if (!p) return;
+                    
+                    title.textContent = '編輯香水檔案';
+                    document.getElementById('form-id').value = p.id;
+                    document.getElementById('form-brand').value = p.brand || '';
+                    document.getElementById('form-name').value = p.name || '';
+                    document.getElementById('form-concentration').value = p.concentration || '';
+                    document.getElementById('form-family').value = p.family || '';
+                    document.getElementById('form-top-notes').value = this.ensureArray(p.topNotes).join('、');
+                    document.getElementById('form-mid-notes').value = this.ensureArray(p.midNotes).join('、');
+                    document.getElementById('form-base-notes').value = this.ensureArray(p.baseNotes).join('、');
+                    document.getElementById('form-status').value = p.status || 'owned';
+                    document.getElementById('form-volume').value = p.volume || '';
+                    document.getElementById('form-price').value = p.price || '';
+                    document.getElementById('form-location').value = p.purchaseLocation || '';
+                    this.lastTypedBrand = p.brand || '';
+                } else {
+                    title.textContent = '新增香水與香調表';
+                    document.getElementById('form-status').value = this.wardrobeMode === 'wishlist' ? 'wishlist' : 'owned';
+                }
+
+                this.toggleLocationFieldByStatus();
+                modal.classList.remove('hidden');
+            },
+
+            closePerfumeModal() {
+                document.getElementById('perfume-modal').classList.add('hidden');
+            },
+
+            splitNotes(str) {
+                if (!str) return [];
+                return String(str).split(/[,，、/]+/).map(s => s.trim()).filter(Boolean);
+            },
+
+            async savePerfume(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('form-id').value;
+                let brand = this.normalizeBrandName(document.getElementById('form-brand').value.trim());
+                let name = this.buildBilingualPerfumeName('', '', document.getElementById('form-name').value.trim(), []);
+
+                if (!this.hasBothZhAndEn(name)) {
+                    const localMatch = this.findLocalMatch(brand, name);
+                    if (localMatch && this.hasBothZhAndEn(localMatch.name)) {
+                        name = localMatch.name;
+                        document.getElementById('form-name').value = name;
+                    } else {
+                        const converted = await this.lookupFragranceInfo(true);
+                        brand = this.normalizeBrandName(document.getElementById('form-brand').value.trim());
+                        name = document.getElementById('form-name').value.trim();
+                        if (!converted || !this.hasBothZhAndEn(name)) {
+                            this.showToast('香水名稱強制要求「中文 + 英文」標示，請點擊自動查找或補齊中英文名稱', 'error');
+                            return;
+                        }
+                    }
+                }
+
+                const concentration = document.getElementById('form-concentration').value;
+                const family = document.getElementById('form-family').value;
+                
+                const topNotes = this.splitNotes(document.getElementById('form-top-notes').value);
+                const midNotes = this.splitNotes(document.getElementById('form-mid-notes').value);
+                const baseNotes = this.splitNotes(document.getElementById('form-base-notes').value);
+                
+                const status = document.getElementById('form-status').value;
+                const volumeVal = document.getElementById('form-volume').value;
+                const priceVal = document.getElementById('form-price').value;
+                const locationVal = document.getElementById('form-location').value.trim();
+
+                const volume = volumeVal !== '' ? Number(volumeVal) : '';
+                const price = (status !== 'wishlist' && priceVal !== '') ? Number(priceVal) : '';
+                const purchaseLocation = status !== 'wishlist' ? locationVal : '';
+
+                let isNewToCatalog = false;
+
+                if (id) {
+                    const idx = this.perfumes.findIndex(p => p.id === id);
+                    if (idx !== -1) {
+                        this.perfumes[idx] = {
+                            ...this.perfumes[idx],
+                            brand, name, concentration, family,
+                            topNotes, midNotes, baseNotes,
+                            status, volume, price, purchaseLocation
+                        };
+                        this.upsertCatalogItem({ brand, name, concentration, family, topNotes, midNotes, baseNotes }, false);
+                        this.saveCatalogCache();
+                        this.showToast('已更新香水資料');
+                    }
+                } else {
+                    const initialKey = brand.toLowerCase() + '||' + name.toLowerCase();
+                    isNewToCatalog = !INITIAL_CATALOG_KEYS.has(initialKey);
+                    
+                    const newPerfume = {
+                        id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+                        brand, name, concentration, family,
+                        topNotes, midNotes, baseNotes,
+                        status, volume, price, purchaseLocation,
+                        wornCount: 0,
+                        createdAt: new Date().toISOString()
+                    };
+                    this.perfumes.unshift(newPerfume);
+                    this.upsertCatalogItem({ brand, name, concentration, family, topNotes, midNotes, baseNotes }, false);
+                    this.saveCatalogCache();
+                    this.showToast('已新增香水紀錄');
+                }
+
+                this.savePerfumesToStorage();
+                this.closePerfumeModal();
+                this.clearPerfumeForm();
+                
+                if (status === 'wishlist') this.wardrobeMode = 'wishlist';
+                else if (status === 'owned' || status === 'sample') this.wardrobeMode = 'collection';
+                
+                this.renderAll();
+
+                if (isNewToCatalog) {
+                    setTimeout(() => {
+                        const wantsToUpload = confirm('「' + brand + ' - ' + name + '」是全新的香水資料！\n\n是否願意將此香調上傳至公開資料庫？');
+                        if (wantsToUpload) {
+                            fetch('https://prospect-drinking-premier-linda.trycloudflare.com/api/upload-fragrance', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ brand, name, concentration, family, topNotes, midNotes, baseNotes })
+                            }).then(() => {
+                                INITIAL_CATALOG_KEYS.add(brand.toLowerCase() + '||' + name.toLowerCase());
+                                this.showToast('上傳成功！感謝你的貢獻。');
+                            }).catch(() => {
+                                this.showToast('上傳失敗，但資料已安全保存在您的裝置中。', 'error');
+                            });
+                        }
+                    }, 600);
+                }
+            },
+
+            markAsEmpty(id) {
+                const p = this.perfumes.find(item => item.id === id);
+                if (!p) return;
+                p.status = 'empty';
+                p.emptiedAt = new Date().toISOString();
+                this.savePerfumesToStorage();
+                this.closeDetailModal();
+                this.renderAll();
+                this.showToast('已將「' + p.name + '」移至已用完空瓶紀錄');
+            },
+
+            quickWear(id) {
+                const p = this.perfumes.find(item => item.id === id);
+                if (!p) return;
+                p.wornCount = (p.wornCount || 0) + 1;
+                
+                const todayStr = new Date().toISOString().split('T')[0];
+                const newLog = {
+                    id: 'log_' + Date.now(),
+                    date: todayStr,
+                    perfumeId: p.id,
+                    perfumeNameSnapshot: p.name,
+                    perfumeBrandSnapshot: p.brand,
+                    weather: '',
+                    occasion: '',
+                    sprays: '',
+                    spot: '',
+                    note: ''
+                };
+                this.logs.unshift(newLog);
+                
+                this.savePerfumesToStorage();
+                this.saveLogsToStorage();
+                this.renderAll();
+                this.showToast('已記錄今日穿香：' + p.brand + ' ' + p.name);
+            },
+
+            confirmDeletePerfume(id) {
+                const p = this.perfumes.find(item => item.id === id);
+                if (!p) return;
+                
+                this.openConfirmModal(
+                    '刪除香水紀錄',
+                    '確定要刪除「' + p.brand + ' - ' + p.name + '」嗎？此操作無法復原。',
+                    () => {
+                        this.perfumes = this.perfumes.filter(item => item.id !== id);
+                        this.savePerfumesToStorage();
+                        this.closeDetailModal();
+                        this.renderAll();
+                        this.showToast('已刪除該筆香水紀錄');
+                    }
+                );
+            },
+
+            openDetailModal(id) {
+                const p = this.perfumes.find(item => item.id === id);
+                if (!p) return;
+
+                const modal = document.getElementById('detail-modal');
+                const content = document.getElementById('detail-modal-content');
+                const famColor = getFamilyStyle(p.family);
+                const safeId = this.escapeHtml(p.id);
+                
+                const statusText = p.status === 'owned' ? '正裝' : (p.status === 'sample' ? '試香 / 分裝' : (p.status === 'empty' ? '已用完空瓶' : '願望清單'));
+
+                const renderNotePills = (arr) => {
+                    const cleanArr = this.ensureArray(arr);
+                    if (cleanArr.length === 0) return '<span class="text-xs text-muted">未填寫</span>';
+                    return cleanArr.map(n => '<span class="px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-xs text-ink">' + this.escapeHtml(n) + '</span>').join('');
+                };
+
+                content.innerHTML = 
+                    '<div class="px-5 py-4 bg-cream border-b border-stone-200 flex items-center justify-between">' +
+                        '<div class="flex items-center gap-2">' +
+                            '<span class="text-xs font-semibold uppercase tracking-wider text-muted">' + this.escapeHtml(p.brand) + '</span>' +
+                            '<span class="text-stone-300">·</span>' +
+                            '<span class="text-xs font-medium text-ink">' + statusText + '</span>' +
+                        '</div>' +
+                        '<button onclick="app.closeDetailModal()" class="w-8 h-8 rounded-full hover:bg-stone-200/70 flex items-center justify-center text-muted hover:text-ink"><i class="ph ph-x text-lg"></i></button>' +
+                    '</div>' +
+                    '<div class="p-5 sm:p-6 overflow-y-auto space-y-5">' +
+                        '<div class="flex items-start gap-4">' +
+                            this.getBottleSvg(p.family, p.concentration) +
+                            '<div class="space-y-1.5">' +
+                                '<h2 class="font-editorial text-2xl font-bold text-ink">' + this.escapeHtml(p.name) + '</h2>' +
+                                '<div class="flex items-center gap-2 flex-wrap">' +
+                                    (p.concentration ? '<span class="text-xs text-muted">' + this.escapeHtml(p.concentration) + '</span>' : '') +
+                                    (p.family ? '<span class="text-xs px-2.5 py-0.5 rounded-full border ' + famColor.badge + '">' + this.escapeHtml(p.family) + '</span>' : '') +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">' +
+                            '<div class="bg-paper border border-stone-200/80 rounded-xl p-2.5">' +
+                                '<span class="text-[11px] text-muted block">容量</span>' +
+                                '<span class="font-semibold text-ink">' + (p.volume ? this.escapeHtml(p.volume) + ' ml' : '未填寫') + '</span>' +
+                            '</div>' +
+                            '<div class="bg-paper border border-stone-200/80 rounded-xl p-2.5">' +
+                                '<span class="text-[11px] text-muted block">購入價格</span>' +
+                                '<span class="font-semibold text-ink">' + (p.price ? 'NT$' + Number(p.price).toLocaleString() : '未填寫') + '</span>' +
+                            '</div>' +
+                            '<div class="bg-paper border border-stone-200/80 rounded-xl p-2.5">' +
+                                '<span class="text-[11px] text-muted block">購買地點</span>' +
+                                '<span class="font-semibold text-ink truncate block">' + this.escapeHtml(p.purchaseLocation || '未填寫') + '</span>' +
+                            '</div>' +
+                            '<div class="bg-paper border border-stone-200/80 rounded-xl p-2.5">' +
+                                '<span class="text-[11px] text-muted block">累積穿香</span>' +
+                                '<span class="font-semibold text-ink">' + (p.wornCount || 0) + ' 次</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="bg-cream/60 border border-stone-200/90 rounded-2xl p-4 space-y-3">' +
+                            '<h3 class="text-xs font-semibold text-ink uppercase tracking-wider">香調表 (Olfactory Pyramid)</h3>' +
+                            '<div class="space-y-2.5">' +
+                                '<div class="bg-paper/90 border border-stone-200/70 rounded-xl p-3">' +
+                                    '<div class="text-[11px] font-medium text-muted mb-1.5">前調 Top Notes</div>' +
+                                    '<div class="flex flex-wrap gap-1.5">' + renderNotePills(p.topNotes) + '</div>' +
+                                '</div>' +
+                                '<div class="bg-paper/90 border border-stone-200/70 rounded-xl p-3">' +
+                                    '<div class="text-[11px] font-medium text-muted mb-1.5">中調 Heart Notes</div>' +
+                                    '<div class="flex flex-wrap gap-1.5">' + renderNotePills(p.midNotes) + '</div>' +
+                                '</div>' +
+                                '<div class="bg-paper/90 border border-stone-200/70 rounded-xl p-3">' +
+                                    '<div class="text-[11px] font-medium text-muted mb-1.5">後調 Base Notes</div>' +
+                                    '<div class="flex flex-wrap gap-1.5">' + renderNotePills(p.baseNotes) + '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="px-5 py-3 bg-cream/40 flex items-center justify-between border-t border-stone-200">' +
+                        '<div class="flex items-center gap-2">' +
+                            '<button onclick="app.closeDetailModal(); app.openPerfumeModal(\'' + safeId + '\')" class="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-medium text-ink hover:bg-cream flex items-center gap-1.5"><i class="ph ph-pencil-simple"></i> 編輯</button>' +
+                        '</div>' +
+                        '<button onclick="app.closeDetailModal()" class="px-4 py-2 rounded-xl bg-ink text-paper text-xs font-medium">關閉</button>' +
+                    '</div>';
+                modal.classList.remove('hidden');
+            },
+
+            closeDetailModal() {
+                document.getElementById('detail-modal').classList.add('hidden');
+            },
+
+            setSotdMood(text) {
+                const input = document.getElementById('sotd-occasion');
+                if (input) input.value = text;
+            },
+
+            renderSotdSection() {
+                const dateInput = document.getElementById('sotd-date');
+                if (dateInput && !dateInput.value) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+
+                const select = document.getElementById('sotd-perfume-id');
+                const wearable = this.perfumes.filter(p => p.status === 'owned' || p.status === 'sample');
+                
+                if (wearable.length === 0) {
+                    select.innerHTML = '<option value="" disabled selected>目前尚無可穿戴的香水</option>';
+                } else {
+                    select.innerHTML = '<option value="" disabled selected>請選擇香水...</option>' + 
+                        wearable.map(p => '<option value="' + this.escapeHtml(p.id) + '">' + this.escapeHtml(p.brand) + ' — ' + this.escapeHtml(p.name) + '</option>').join('');
+                }
+
+                document.getElementById('sotd-total-count').textContent = '共 ' + this.logs.length + ' 筆穿香紀錄';
+
+                const timeline = document.getElementById('sotd-timeline');
+                if (this.logs.length === 0) {
+                    timeline.innerHTML = '<div class="bg-white/70 border border-dashed border-stone-300 rounded-2xl p-10 text-center space-y-2"><i class="ph ph-calendar-blank text-2xl text-muted"></i><p class="text-sm font-medium text-ink">尚無穿香日誌</p></div>';
+                    return;
+                }
+
+                const sortedLogs = [...this.logs].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                
+                timeline.innerHTML = sortedLogs.map(log => {
+                    const perfume = this.perfumes.find(p => p.id === log.perfumeId);
+                    const brand = perfume ? perfume.brand : (log.perfumeBrandSnapshot || '');
+                    const name = perfume ? perfume.name : (log.perfumeNameSnapshot || '已刪除的香水');
+                    const safeLogId = this.escapeHtml(log.id);
+
+                    return '<div class="bg-white border border-stone-200/80 rounded-2xl p-4 flex items-start justify-between gap-3 shadow-sm">' +
+                        '<div class="space-y-1.5 min-w-0">' +
+                            '<div class="flex items-center gap-2 flex-wrap text-xs text-muted">' +
+                                '<span class="font-semibold text-ink">' + this.escapeHtml(log.date || '未填日期') + '</span>' +
+                                (log.weather ? '<span>· ' + this.escapeHtml(log.weather) + '</span>' : '') +
+                                (log.occasion ? '<span>· ' + this.escapeHtml(log.occasion) + '</span>' : '') +
+                            '</div>' +
+                            '<div class="font-editorial text-base font-bold text-ink">' +
+                                '<span class="text-xs font-sans font-semibold uppercase tracking-wider text-muted mr-1.5">' + this.escapeHtml(brand) + '</span>' +
+                                this.escapeHtml(name) +
+                            '</div>' +
+                            ((log.sprays || log.spot || log.note) ? 
+                                '<div class="flex items-center gap-3 flex-wrap text-xs text-muted pt-0.5">' +
+                                    (log.sprays ? '<span>按壓 ' + this.escapeHtml(log.sprays) + ' 噴</span>' : '') +
+                                    (log.spot ? '<span>部位：' + this.escapeHtml(log.spot) + '</span>' : '') +
+                                    (log.note ? '<span class="text-ink/80">備註：' + this.escapeHtml(log.note) + '</span>' : '') +
+                                '</div>'
+                            : '') +
+                        '</div>' +
+                        '<button onclick="app.deleteSotdLog(\'' + safeLogId + '\')" title="刪除" class="w-7 h-7 rounded-lg text-muted hover:text-rose hover:bg-rose/10 flex items-center justify-center shrink-0"><i class="ph ph-trash text-sm"></i></button>' +
+                    '</div>';
+                }).join('');
+            },
+
+            saveSotdLog(e) {
+                e.preventDefault();
+                const date = document.getElementById('sotd-date').value;
+                const weather = document.getElementById('sotd-weather').value;
+                const perfumeId = document.getElementById('sotd-perfume-id').value;
+                const occasion = document.getElementById('sotd-occasion').value.trim();
+                const sprays = document.getElementById('sotd-sprays').value;
+                const spot = document.getElementById('sotd-spot').value.trim();
+                const note = document.getElementById('sotd-note').value.trim();
+
+                if (!perfumeId) {
+                    this.showToast('請選擇今日穿戴的香水', 'error');
+                    return;
+                }
+
+                const perfume = this.perfumes.find(p => p.id === perfumeId);
+                if (perfume) {
+                    perfume.wornCount = (perfume.wornCount || 0) + 1;
+                    this.savePerfumesToStorage();
+                }
+
+                this.logs.unshift({
+                    id: 'log_' + Date.now(),
+                    date, weather, perfumeId,
+                    perfumeBrandSnapshot: perfume ? perfume.brand : '',
+                    perfumeNameSnapshot: perfume ? perfume.name : '',
+                    occasion, sprays, spot, note
+                });
+
+                this.saveLogsToStorage();
+                document.getElementById('sotd-form').reset();
+                this.renderSotdSection();
+                this.renderWardrobe();
+                this.showToast('已儲存穿香日誌');
+            },
+
+            deleteSotdLog(logId) {
+                const idx = this.logs.findIndex(l => l.id === logId);
+                if (idx === -1) return;
+
+                const log = this.logs[idx];
+                const perfume = this.perfumes.find(p => p.id === log.perfumeId);
+                if (perfume && (perfume.wornCount || 0) > 0) {
+                    perfume.wornCount -= 1;
+                    this.savePerfumesToStorage();
+                }
+
+                this.logs.splice(idx, 1);
+                this.saveLogsToStorage();
+                this.renderSotdSection();
+                this.renderWardrobe();
+                this.showToast('已刪除該筆穿香紀錄');
+            },
+
+            renderStatsSection() {
+                const kpiGrid = document.getElementById('stats-kpi-grid');
+                const ownedList = this.perfumes.filter(p => p.status === 'owned');
+                const sampleList = this.perfumes.filter(p => p.status === 'sample');
+                const emptyList = this.perfumes.filter(p => p.status === 'empty');
+
+                kpiGrid.innerHTML = 
+                    '<div class="flex flex-wrap items-center justify-between gap-4 text-xs sm:text-sm">' +
+                        '<span class="font-editorial text-base font-bold text-ink">數量統計</span>' +
+                        '<div class="flex flex-wrap items-center gap-4 sm:gap-6">' +
+                            '<div class="flex items-baseline gap-1.5"><span class="text-muted">正裝</span><span class="font-editorial text-xl font-bold text-ink">' + ownedList.length + '</span><span class="text-xs text-muted">支</span></div>' +
+                            '<span class="text-stone-300">|</span>' +
+                            '<div class="flex items-baseline gap-1.5"><span class="text-muted">試香</span><span class="font-editorial text-xl font-bold text-ink">' + sampleList.length + '</span><span class="text-xs text-muted">支</span></div>' +
+                            '<span class="text-stone-300">|</span>' +
+                            '<div class="flex items-baseline gap-1.5"><span class="text-muted">空瓶</span><span class="font-editorial text-xl font-bold text-ink">' + emptyList.length + '</span><span class="text-xs text-muted">支</span></div>' +
+                            '<span class="text-stone-300">|</span>' +
+                            '<div class="flex items-baseline gap-1.5"><span class="text-muted">日誌</span><span class="font-editorial text-xl font-bold text-ink">' + this.logs.length + '</span><span class="text-xs text-muted">次</span></div>' +
+                        '</div>' +
+                    '</div>';
+
+                const acquired = this.perfumes.filter(p => p.status !== 'wishlist');
+                const familyBars = document.getElementById('stats-family-bars');
+                if (acquired.length === 0) familyBars.innerHTML = '<p class="text-xs text-muted py-4 text-center">尚無香水數據</p>';
+                else {
+                    const counts = {};
+                    acquired.forEach(p => { if (p.family) counts[p.family] = (counts[p.family] || 0) + 1; });
+                    familyBars.innerHTML = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([fam, cnt]) => {
+                        const pct = Math.round((cnt / acquired.length) * 100);
+                        const color = getFamilyStyle(fam).accent;
+                        return '<div class="space-y-1">' +
+                            '<div class="flex items-center justify-between text-xs"><span class="font-medium text-ink">' + this.escapeHtml(fam) + '</span><span class="text-muted">' + cnt + ' 支 (' + pct + '%)</span></div>' +
+                            '<div class="w-full h-2 rounded-full bg-cream overflow-hidden"><div class="h-full rounded-full" style="width: ' + pct + '%; background-color: ' + color + '"></div></div>' +
+                        '</div>';
+                    }).join('');
+                }
+
+                const notesContainer = document.getElementById('stats-top-notes');
+                const noteFreq = {};
+                acquired.forEach(p => {
+                    [...this.ensureArray(p.topNotes), ...this.ensureArray(p.midNotes), ...this.ensureArray(p.baseNotes)].forEach(n => {
+                        if (n) noteFreq[n] = (noteFreq[n] || 0) + 1;
+                    });
+                });
+                
+                notesContainer.innerHTML = Object.entries(noteFreq).sort((a, b) => b[1] - a[1]).slice(0, 18).map(([note, count]) => 
+                    '<span class="px-3 py-1.5 rounded-xl bg-paper border border-stone-200 text-xs text-ink flex items-center gap-1.5">' +
+                        '<span>' + this.escapeHtml(note) + '</span><span class="text-[10px] px-1.5 py-0.5 rounded-full bg-cream text-muted font-semibold">' + count + '</span>' +
+                    '</span>'
+                ).join('') || '<p class="text-xs text-muted py-4 text-center w-full">尚無香材數據</p>';
+
+                document.getElementById('stats-empties-count').textContent = '共 ' + emptyList.length + ' 支空瓶';
+                if (emptyList.length === 0) {
+                    document.getElementById('stats-empties-grid').innerHTML = '<div class="col-span-full py-6 text-center text-xs text-muted">目前尚無空瓶紀錄</div>';
+                } else {
+                    const groupedEmpties = new Map();
+                    emptyList.forEach(p => {
+                        const key = String(p.brand || '').toLowerCase() + '||' + String(p.name || '').toLowerCase();
+                        if (!groupedEmpties.has(key)) {
+                            groupedEmpties.set(key, { brand: p.brand, name: p.name, volumes: {} });
+                        }
+                        const volLabel = p.volume ? (p.volume + 'ml') : '未知容量';
+                        const group = groupedEmpties.get(key);
+                        group.volumes[volLabel] = (group.volumes[volLabel] || 0) + 1;
+                    });
+
+                    document.getElementById('stats-empties-grid').innerHTML = Array.from(groupedEmpties.values()).map(g => {
+                        const volBadges = Object.entries(g.volumes).map(([vol, cnt]) => 
+                            '<span class="px-2 py-0.5 rounded-md bg-white border border-stone-200 text-xs font-medium text-ink">' + this.escapeHtml(vol) + (cnt > 1 ? ' × ' + cnt : '') + '</span>'
+                        ).join('');
+                        return '<div class="bg-paper border border-stone-200/90 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3">' +
+                            '<div class="min-w-0">' +
+                                '<div class="text-[11px] font-semibold uppercase tracking-wider text-muted truncate">' + this.escapeHtml(g.brand) + '</div>' +
+                                '<div class="text-sm font-bold text-ink truncate">' + this.escapeHtml(g.name) + '</div>' +
+                            '</div>' +
+                            '<div class="flex flex-wrap gap-1 shrink-0">' + volBadges + '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+            },
+
+            exportData() {
+                const payload = {
+                    version: 3,
+                    exportedAt: new Date().toISOString(),
+                    perfumes: this.perfumes,
+                    logs: this.logs
+                };
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'scentjournal_backup_' + new Date().toISOString().split('T')[0] + '.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                this.showToast('已匯出 JSON 備份檔');
+            },
+
+            importData(event) {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!Array.isArray(data.perfumes)) throw new Error('Invalid format');
+                        this.perfumes = data.perfumes.filter(p => p && typeof p === 'object').map(p => ({
+                            ...p,
+                            brand: this.normalizeBrandName(p.brand || ''),
+                            name: this.buildBilingualPerfumeName('', '', p.name || '', []),
+                            topNotes: this.ensureArray(p.topNotes),
+                            midNotes: this.ensureArray(p.midNotes),
+                            baseNotes: this.ensureArray(p.baseNotes)
+                        }));
+                        this.logs = Array.isArray(data.logs) ? data.logs : [];
+                        this.savePerfumesToStorage();
+                        this.saveLogsToStorage();
+                        this.renderAll();
+                        this.showToast('已成功匯入備份資料');
+                    } catch (err) {
+                        this.showToast('備份檔格式錯誤', 'error');
+                    } finally {
+                        event.target.value = '';
+                    }
+                };
+                reader.readAsText(file);
+            },
+
+            openConfirmModal(title, message, onConfirm) {
+                document.getElementById('confirm-title').textContent = title;
+                document.getElementById('confirm-message').textContent = message;
+                const yesBtn = document.getElementById('confirm-yes-btn');
+                yesBtn.onclick = () => {
+                    this.closeConfirmModal();
+                    if (typeof onConfirm === 'function') onConfirm();
+                };
+                document.getElementById('confirm-modal').classList.remove('hidden');
+            },
+
+            closeConfirmModal() {
+                document.getElementById('confirm-modal').classList.add('hidden');
+            },
+
+            showToast(msg, type) {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                const isError = type === 'error';
+                toast.className = (isError ? 'bg-rose text-white' : 'bg-ink text-paper') + ' px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium flex items-center gap-2 animate-fade-in';
+                toast.innerHTML = '<i class="ph ' + (isError ? 'ph-warning-circle' : 'ph-check-circle') + ' text-gold text-base"></i><span>' + this.escapeHtml(msg) + '</span>';
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 2600);
+            },
+
+            escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
