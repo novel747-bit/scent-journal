@@ -1,6 +1,5 @@
-const CACHE_NAME = 'scentjournal-cache-v4';
+const CACHE_NAME = 'scentjournal-cache-v5'; // 已經升級到 v5
 
-// 定義需要快取的核心檔案
 const urlsToCache = [
   './',
   './index.html',
@@ -11,16 +10,14 @@ const urlsToCache = [
   'https://unpkg.com/@phosphor-icons/web'
 ];
 
-// 安裝階段：將核心檔案加入快取
 self.addEventListener('install', event => {
-  self.skipWaiting(); // 強制立刻啟用新的 Service Worker
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
   );
 });
 
-// 啟用階段：清除舊版本的快取
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -36,29 +33,36 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 攔截請求：採用 Cache First, fall back to Network 策略
 self.addEventListener('fetch', event => {
-  // 針對 API 請求不進行快取
+  // 絕對不快取對 Gemini API 的請求，直接讓它走網路
   if (event.request.url.includes('generativelanguage.googleapis.com')) {
-    return;
+    return; // 放行，不介入
   }
   
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // 從快取返回
+    caches.match(event.request).then(cachedResponse => {
+      if (cachedResponse) {
+        return cachedResponse; // 有快取就回傳快取
+      }
+      
+      // 沒快取就發起網路請求
+      return fetch(event.request).then(networkResponse => {
+        // 確認拿到的是正常的 Response 物件，否則丟出錯誤
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
         }
-        // 否則透過網路抓取
-        return fetch(event.request).then(
-          function(networkResponse) {
-            // 不快取無效的請求
-            if(!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-              return networkResponse;
-            }
-            return networkResponse;
-          }
-        );
-      })
+        
+        // 可選：如果你想要動態快取新圖片，可以寫在這裡
+        // 但目前我們只要確保能正常回傳即可
+        return networkResponse;
+      }).catch(err => {
+        // 當使用者離線且又沒有快取時，回傳一個自訂的錯誤 Response 以避免 TypeError
+        console.error('Fetch failed; returning offline response instead.', err);
+        return new Response('Network error happened', {
+          status: 408,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      });
+    })
   );
 });
