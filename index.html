@@ -1046,77 +1046,79 @@
                 text.textContent = msg;
             },
 
-            async lookupFragranceInfo(forceOverwrite = true) {
-                const brand = document.getElementById('form-brand').value.trim();
-                const name = document.getElementById('form-name').value.trim();
+          async function lookupFragranceInfo(forceOverwrite = true) {
+    const brand = document.getElementById('form-brand').value.trim();
+    const name = document.getElementById('form-name').value.trim();
 
-                if (!brand && !name) {
-                    this.showToast('請先輸入品牌與香水名稱', 'error');
-                    return;
-                }
+    if (!brand && !name) {
+        this.showToast('請先輸入品牌與香水名稱', 'error');
+        return;
+    }
 
-                const normBrand = brand.toLowerCase();
-                const normName = name.toLowerCase();
-                const localMatch = FRAGRANCE_CATALOG.find(item => {
-                    const bMatch = !normBrand || item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase());
-                    const nMatch = item.name.toLowerCase().includes(normName) || (item.aliases || []).some(a => normName.includes(a.toLowerCase()) || a.toLowerCase().includes(normName));
-                    return bMatch && nMatch && normName.length > 0;
-                });
+    // 1. 【第一優先】嚴格先從本機靜態資料庫 (FRAGRANCE_CATALOG) 搜尋
+    const normBrand = brand.toLowerCase();
+    const normName = name.toLowerCase();
+    const localMatch = FRAGRANCE_CATALOG.find(item => {
+        const bMatch = !normBrand || item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase());
+        const nMatch = item.name.toLowerCase().includes(normName) || (item.aliases || []).some(a => normName.includes(a.toLowerCase()) || a.toLowerCase().includes(normName));
+        return bMatch && nMatch && normName.length > 0;
+    });
 
-                if (localMatch) {
-                    this.fillFragranceFields(localMatch);
-                    this.showLookupStatus(`已自動從資料庫修正為「${localMatch.brand} - ${localMatch.name}」並帶入香調`, false);
-                    return;
-                }
+    if (localMatch) {
+        this.fillFragranceFields(localMatch);
+        this.showLookupStatus(`已從本機資料庫成功帶入「${localMatch.brand} - ${localMatch.name}」`, false);
+        return; // 資料庫找得到就直接結束，絕對不上網！
+    }
 
-                const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-                if (!apiKey) {
-                    this.showToast('圖鑑中無此香水，請點擊右上角「設定金鑰」以啟用線上查找', 'error');
-                    return;
-                }
+    // 2. 【第二候補】只有在本機資料庫「完全找不到」時，才啟用 Gemini API 上網搜尋
+    const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
+    if (!apiKey) {
+        this.showToast('本機資料庫無此香水，請點擊右上角「設定金鑰」以啟用線上 AI 查找', 'error');
+        return;
+    }
 
-                this.showLookupStatus(`正在透過 gemini-3-flash-preview 檢索並校正...`, true);
+    this.showLookupStatus(`本機資料庫無此筆資料，正在透過 gemini-3-flash-preview 上網檢索...`, true);
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const prompt = `使用者輸入了品牌「${brand}」與香水名稱「${name}」。
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+    const prompt = `使用者輸入了品牌「${brand}」與香水名稱「${name}」。
 請校正品牌與香水為官方正式中英文名稱。
 【絕對禁止】brand 欄位出現任何代理商或通路分類字眼（如「迷香人旗下品牌」、「夏利夫」等），只能回傳真實品牌名稱。
 請提供 concentration、family、topNotes、midNotes、baseNotes。`;
 
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "OBJECT",
-                            properties: {
-                                brand: { type: "STRING" }, name: { type: "STRING" }, concentration: { type: "STRING" },
-                                family: { type: "STRING" }, topNotes: { type: "ARRAY", items: { type: "STRING" } },
-                                midNotes: { type: "ARRAY", items: { type: "STRING" } }, baseNotes: { type: "ARRAY", items: { type: "STRING" } }
-                            }
-                        }
-                    }
-                };
-
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error('Network error');
-                    const result = await response.json();
-                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        const data = JSON.parse(text);
-                        data.brand = this.normalizeBrandName(data.brand || brand);
-                        this.fillFragranceFields(data);
-                        this.showLookupStatus(`已自動校正並帶入香調表`, false);
-                        return;
-                    }
-                    throw new Error('Empty result');
-                } catch (e) {
-                    this.showLookupStatus(`未能自動找到該香水，請手動填寫`, false);
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: "OBJECT",
+                properties: {
+                    brand: { type: "STRING" }, name: { type: "STRING" }, concentration: { type: "STRING" },
+                    family: { type: "STRING" }, topNotes: { type: "ARRAY", items: { type: "STRING" } },
+                    midNotes: { type: "ARRAY", items: { type: "STRING" } }, baseNotes: { type: "ARRAY", items: { type: "STRING" } }
                 }
-            },
+            }
+        }
+    };
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('Network error');
+        const result = await response.json();
+        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+            const data = JSON.parse(text);
+            data.brand = this.normalizeBrandName(data.brand || brand);
+            this.fillFragranceFields(data);
+            this.showLookupStatus(`已透過線上 AI 找到並帶入香調表`, false);
+            return;
+        }
+        throw new Error('Empty result');
+    } catch (e) {
+        this.showLookupStatus(`未能找到該香水，請手動填寫`, false);
+    }         
+}, 
 
             setWardrobeMode(mode) {
                 this.wardrobeMode = mode;
