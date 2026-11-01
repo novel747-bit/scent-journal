@@ -454,7 +454,22 @@
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-muted mb-1">主香調</label>
-                            <input type="text" id="form-family" value="" placeholder="自動帶入或自行輸入（如：木質調）" class="w-full px-3 py-2 bg-paper border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
+                            <input type="text" id="form-family" list="family-datalist" value="" placeholder="自動帶入或自行輸入（如：木質調）" class="w-full px-3 py-2 bg-paper border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
+                                <datalist id="family-datalist">
+                                    <option value="木質調">
+                                    <option value="花香調">
+                                    <option value="柑橘調">
+                                    <option value="果香調">
+                                    <option value="草本綠葉調">
+                                    <option value="麝香調">
+                                    <option value="東方調">
+                                    <option value="水生調">
+                                    <option value="皮革調">
+                                    <option value="美食調">
+                                    <option value="木質花香調">
+                                    <option value="花香果香調">
+                                    <option value="柑橘木質調">
+                                </datalist>
                         </div>
                     </div>
 
@@ -1023,18 +1038,30 @@
             },
 
             fillFragranceFields(data) {
-                if (data.brand) document.getElementById('form-brand').value = this.normalizeBrandName(data.brand);
-                if (data.name) document.getElementById('form-name').value = data.name;
-                if (data.concentration) {
-                    const concSelect = document.getElementById('form-concentration');
-                    const options = Array.from(concSelect.options).map(o => o.value);
-                    if (options.includes(data.concentration)) concSelect.value = data.concentration;
-                }
-                if (data.family) document.getElementById('form-family').value = data.family;
-                if (Array.isArray(data.topNotes)) document.getElementById('form-top-notes').value = data.topNotes.join('、');
-                if (Array.isArray(data.midNotes)) document.getElementById('form-mid-notes').value = data.midNotes.join('、');
-                if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
-            },
+                        if (data.brand) document.getElementById('form-brand').value = this.normalizeBrandName(data.brand);
+                        if (data.name) document.getElementById('form-name').value = data.name;
+                        
+                        // 修正濃度對應
+                        if (data.concentration) {
+                            const concSelect = document.getElementById('form-concentration');
+                            const options = Array.from(concSelect.options).map(o => o.value);
+                            if (options.includes(data.concentration)) {
+                                concSelect.value = data.concentration;
+                            } else {
+                                concSelect.value = "EDP 淡香精"; // 預設防呆
+                            }
+                        }
+                        
+                        // 修正主香調對應
+                        if (data.family) {
+                            const familyInput = document.getElementById('form-family');
+                            if (familyInput) familyInput.value = data.family;
+                        }
+                        
+                        if (Array.isArray(data.topNotes)) document.getElementById('form-top-notes').value = data.topNotes.join('、');
+                        if (Array.isArray(data.midNotes)) document.getElementById('form-mid-notes').value = data.midNotes.join('、');
+                        if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
+                    },
 
             showLookupStatus(msg, isLoading = false) {
                 const box = document.getElementById('lookup-status');
