@@ -1549,6 +1549,9 @@
                         wornCount: 0, createdAt: new Date().toISOString()
                     };
                     this.perfumes.unshift(newPerfume);
+                    
+                    FRAGRANCE_CATALOG.push({ brand, name, concentration, family, topNotes, midNotes, baseNotes });
+                
                     this.showToast('已新增香水紀錄');
                 }
 
