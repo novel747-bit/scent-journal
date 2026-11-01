@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ScentJournal">
     <title>ScentJournal · 香氛圖鑑與穿香紀錄</title>
+
     <!-- Tailwind CSS v3 CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -17,7 +18,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -40,7 +40,6 @@
             }
         }
     </script>
-
     <style>
         body {
             background-color: #FAF7F2;
@@ -55,8 +54,8 @@
             display: none;
         }
         .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
@@ -99,8 +98,7 @@
                     <i class="ph ph-key text-gold text-sm"></i><span class="hidden sm:inline">設定金鑰</span>
                 </button>
                 <button onclick="app.openPerfumeModal()" class="px-4 py-2 rounded-full bg-ink hover:bg-stone-800 text-paper transition-all shadow-sm flex items-center gap-1.5 text-xs sm:text-sm font-medium">
-                    <i class="ph ph-plus text-base"></i>
-                    <span>新增香水</span>
+                    <i class="ph ph-plus text-base"></i> <span>新增香水</span>
                 </button>
             </div>
         </div>
@@ -108,36 +106,35 @@
 
     <!-- Main Content Container -->
     <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 md:pb-12">
-
+        
         <!-- ==================== TAB 1: WARDROBE (香氛衣櫥) ==================== -->
         <section id="tab-wardrobe" class="space-y-4 animate-fade-in">
             <div class="flex items-center justify-between flex-wrap gap-2 border-b border-stone-200 pb-3">
                 <div class="inline-flex bg-cream p-1 rounded-xl border border-stone-200/80 flex-wrap gap-1">
                     <button onclick="app.setWardrobeMode('collection')" id="mode-btn-collection" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-ink text-paper shadow-sm flex items-center gap-1.5">
-                        <i class="ph ph-flask"></i> 已購入收藏 <span id="badge-count-collection" class="px-1.5 py-0.2 rounded-full text-[11px] bg-white/20 text-paper">0</span>
+                        <i class="ph ph-flask"></i> 已購入收藏
+                        <span id="badge-count-collection" class="px-1.5 py-0.2 rounded-full text-[11px] bg-white/20 text-paper">0</span>
                     </button>
                     <button onclick="app.setWardrobeMode('wishlist')" id="mode-btn-wishlist" class="px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-muted hover:text-ink flex items-center gap-1.5">
-                        <i class="ph ph-sparkle"></i> 願望清單 <span id="badge-count-wishlist" class="px-1.5 py-0.2 rounded-full text-[11px] bg-stone-200 text-muted">0</span>
+                        <i class="ph ph-sparkle"></i> 願望清單
+                        <span id="badge-count-wishlist" class="px-1.5 py-0.2 rounded-full text-[11px] bg-stone-200 text-muted">0</span>
                     </button>
                 </div>
-
+                
                 <div class="flex items-center gap-1.5 ml-auto">
                     <button type="button" onclick="app.toggleSearchBox()" id="btn-toggle-search" title="開啟搜尋" class="h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1">
                         <i class="ph ph-magnifying-glass text-sm"></i>
                         <span class="hidden sm:inline">搜尋</span>
                     </button>
-
                     <button type="button" onclick="app.toggleFilterPanel()" id="btn-toggle-filter" title="香調分類篩選" class="h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1">
                         <i class="ph ph-funnel text-sm"></i>
                         <span id="filter-btn-label" class="hidden sm:inline">香調分類</span>
                     </button>
-
                     <select id="filter-status" onchange="app.renderWardrobe()" class="h-8 bg-paper border border-stone-200 rounded-lg px-2 text-xs text-ink focus:outline-none focus:border-gold">
                         <option value="all">全部類型</option>
                         <option value="owned">正裝</option>
                         <option value="sample">試香 / 分裝</option>
                     </select>
-
                     <select id="sort-by" onchange="app.renderWardrobe()" class="h-8 bg-paper border border-stone-200 rounded-lg px-2 text-xs text-ink focus:outline-none focus:border-gold">
                         <option value="newest">最新加入</option>
                         <option value="worn">最常穿戴</option>
@@ -302,7 +299,6 @@
                             你的所有香水圖鑑與穿香日誌皆保存在此裝置的瀏覽器中。你可以隨時匯出成 JSON 備份檔案保存。
                         </p>
                     </div>
-
                     <div class="flex flex-wrap items-center gap-2.5">
                         <button onclick="app.exportData()" class="px-4 py-2.5 rounded-xl bg-ink hover:bg-stone-800 text-paper text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 shadow-sm">
                             <i class="ph ph-download-simple text-base"></i> 匯出 JSON 備份
@@ -376,41 +372,27 @@
                             <i class="ph ph-sparkle text-gold"></i> 步驟 1：輸入品牌與香水名稱（支援自動帶入香調表）
                         </span>
                         <button type="button" id="btn-auto-lookup" onclick="app.lookupFragranceInfo(true)" class="px-3 py-1 rounded-lg bg-ink text-paper hover:bg-stone-800 text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
-                            <i class="ph ph-magnifying-glass"></i>
-                            <span>自動查找香調</span>
+                            <i class="ph ph-magnifying-glass"></i> <span>自動查找香調</span>
                         </button>
                     </div>
-
+                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Custom Combobox for Brand (統一選單模式) -->
                         <div class="relative" id="brand-dropdown-container">
                             <label class="block text-xs font-medium text-muted mb-1">品牌 (Brand) *</label>
                             <div class="relative">
-                                <input type="text" id="form-brand" autocomplete="off" required
-                                    oninput="app.onBrandInput()" 
-                                    onfocus="app.showBrandDropdown(false)"
-                                    onclick="app.showBrandDropdown(false)"
-                                    onchange="app.onBrandOrNameBlur()"
-                                    placeholder="直接輸入或選擇品牌..." 
-                                    class="w-full pl-3.5 pr-10 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
+                                <!-- 移除 onchange 以避免自動搜尋偷跑 -->
+                                <input type="text" id="form-brand" autocomplete="off" required oninput="app.onBrandInput()" onfocus="app.showBrandDropdown(false)" onclick="app.showBrandDropdown(false)" placeholder="直接輸入或選擇品牌..." class="w-full pl-3.5 pr-10 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
                                 <button type="button" tabindex="-1" onclick="app.toggleBrandDropdown(event)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-muted hover:text-ink rounded-md hover:bg-stone-100 transition-colors">
                                     <i class="ph ph-caret-down"></i>
                                 </button>
                             </div>
                             <ul id="brand-custom-list" class="hidden absolute z-50 w-full mt-1 bg-white border border-stone-200 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1 text-sm ring-1 ring-black/5"></ul>
                         </div>
-
-                        <!-- Custom Combobox for Name (統一選單模式) -->
                         <div class="relative" id="name-dropdown-container">
                             <label class="block text-xs font-medium text-muted mb-1">香水名稱 (Name) *</label>
                             <div class="relative">
-                                <input type="text" id="form-name" autocomplete="off" required
-                                    oninput="app.onNameInput()"
-                                    onfocus="app.showNameDropdown(false)"
-                                    onclick="app.showNameDropdown(false)"
-                                    onchange="app.onBrandOrNameBlur()"
-                                    placeholder="直接輸入或選擇香水..." 
-                                    class="w-full pl-3.5 pr-10 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
+                                <!-- 移除 onchange 以避免自動搜尋偷跑 -->
+                                <input type="text" id="form-name" autocomplete="off" required oninput="app.onNameInput()" onfocus="app.showNameDropdown(false)" onclick="app.showNameDropdown(false)" placeholder="直接輸入或選擇香水..." class="w-full pl-3.5 pr-10 py-2 bg-white border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
                                 <button type="button" tabindex="-1" onclick="app.toggleNameDropdown(event)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center text-muted hover:text-ink rounded-md hover:bg-stone-100 transition-colors">
                                     <i class="ph ph-caret-down"></i>
                                 </button>
@@ -439,7 +421,6 @@
                     <span class="text-xs font-semibold text-ink flex items-center gap-1.5">
                         <i class="ph ph-list-bullets text-gold"></i> 步驟 2：香調表與濃度（可由上方自動帶入或自行填寫）
                     </span>
-
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-muted mb-1">濃度 (Concentration)</label>
@@ -455,24 +436,23 @@
                         <div>
                             <label class="block text-xs font-medium text-muted mb-1">主香調</label>
                             <input type="text" id="form-family" list="family-datalist" value="" placeholder="自動帶入或自行輸入（如：木質調）" class="w-full px-3 py-2 bg-paper border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-gold">
-                                <datalist id="family-datalist">
-                                    <option value="木質調">
-                                    <option value="花香調">
-                                    <option value="柑橘調">
-                                    <option value="果香調">
-                                    <option value="草本綠葉調">
-                                    <option value="麝香調">
-                                    <option value="東方調">
-                                    <option value="水生調">
-                                    <option value="皮革調">
-                                    <option value="美食調">
-                                    <option value="木質花香調">
-                                    <option value="花香果香調">
-                                    <option value="柑橘木質調">
-                                </datalist>
+                            <datalist id="family-datalist">
+                                <option value="木質調">
+                                <option value="花香調">
+                                <option value="柑橘調">
+                                <option value="果香調">
+                                <option value="草本綠葉調">
+                                <option value="麝香調">
+                                <option value="東方調">
+                                <option value="水生調">
+                                <option value="皮革調">
+                                <option value="美食調">
+                                <option value="木質花香調">
+                                <option value="花香果香調">
+                                <option value="柑橘木質調">
+                            </datalist>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-muted mb-1">前調 (Top Notes)</label>
@@ -548,7 +528,6 @@
         };
 
         const BASE_FAMILIES = ['木質調', '花香調', '柑橘調', '果香調', '草本綠葉調', '麝香調', '東方調', '水生調', '皮革調', '美食調'];
-
         const FAMILY_COLORS = {
             '木質': { bg: '#E6DDD2', accent: '#6E5536', badge: 'bg-amber-950/10 text-amber-900 border-amber-800/20' },
             '花': { bg: '#F2E2E4', accent: '#9E5863', badge: 'bg-rose-950/10 text-rose-900 border-rose-800/20' },
@@ -604,14 +583,12 @@
                 });
             },
 
-            // 智能清理品牌名稱與去重複，過濾掉「迷香人旗下品牌」等冗言贅字
             normalizeBrandName(rawBrand) {
                 if (!rawBrand) return '';
                 let cleaned = rawBrand.trim();
-                // 移除代理商或旗下品牌的贅字
                 cleaned = cleaned.replace(/迷香人旗下品牌|夏利夫旗下品牌|迷香人|夏利夫/gi, '').trim();
-                // 規範化常見品牌大小寫與括號去重
                 const lower = cleaned.toLowerCase();
+                
                 if (lower.includes('nishane') || lower.includes('妮香')) return 'Nishane';
                 if (lower.includes('diptyque')) return 'Diptyque';
                 if (lower.includes('aesop')) return 'Aesop';
@@ -624,6 +601,7 @@
                 if (lower.includes('hermes') || lower.includes('愛馬仕')) return 'Hermès';
                 if (lower.includes('penhaligon')) return 'Penhaligon\'s';
                 if (lower.includes('mfk') || lower.includes('maison francis kurkdjian')) return 'Maison Francis Kurkdjian';
+                
                 return cleaned;
             },
 
@@ -633,11 +611,15 @@
                     if (response.ok) {
                         const externalData = await response.json();
                         externalData.forEach(item => {
-                            const cleanBrand = this.normalizeBrandName(item.brand);
-                            const cleanName = item.name.trim();
+                            // 相容新舊欄位設計，優先採用中文
+                            const rawBrand = item.brand_zh || item.brand_en || item.brand || '';
+                            const rawName = item.name_zh || item.name_en || item.name || '';
+                            
+                            const cleanBrand = this.normalizeBrandName(rawBrand);
+                            const cleanName = rawName.trim();
                             const normBrand = cleanBrand.toLowerCase();
                             const normName = cleanName.toLowerCase();
-                            
+
                             const exists = FRAGRANCE_CATALOG.some(c => {
                                 const cBrand = c.brand.toLowerCase();
                                 if (!cBrand.includes(normBrand) && !normBrand.includes(cBrand)) return false;
@@ -652,7 +634,7 @@
                                     name: cleanName,
                                     aliases: item.aliases || [],
                                     concentration: item.concentration || 'EDP 淡香精',
-                                    family: item.family || '', 
+                                    family: item.family || '',
                                     topNotes: item.notes?.top || item.topNotes || [],
                                     midNotes: item.notes?.heart || item.midNotes || [],
                                     baseNotes: item.notes?.base || item.baseNotes || []
@@ -661,7 +643,7 @@
                         });
                     }
                 } catch (e) {
-                    console.log("載入 fragrances.json 發生錯誤或無檔案");
+                    console.error("載入 fragrances.json 發生錯誤：", e);
                 }
                 this.renderAll();
             },
@@ -673,7 +655,6 @@
                     'sotd': document.getElementById('tab-sotd'),
                     'stats': document.getElementById('tab-stats')
                 };
-
                 Object.keys(sections).forEach(key => {
                     const sec = sections[key];
                     if (sec) {
@@ -691,7 +672,7 @@
                     const btn = navButtons[key];
                     if (btn) {
                         btn.className = key === tabId 
-                            ? 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-ink text-paper shadow-sm' 
+                            ? 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all bg-ink text-paper shadow-sm'
                             : 'nav-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all text-muted hover:text-ink';
                     }
                 });
@@ -704,8 +685,8 @@
                 Object.keys(mobButtons).forEach(key => {
                     const btn = mobButtons[key];
                     if (btn) {
-                        btn.className = key === tabId 
-                            ? 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-ink font-semibold' 
+                        btn.className = key === tabId
+                            ? 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-ink font-semibold'
                             : 'flex flex-col items-center gap-0.5 py-1 px-4 rounded-xl text-muted';
                     }
                 });
@@ -725,15 +706,22 @@
             setupPwaManifest() {
                 try {
                     const manifest = {
-                        name: "ScentJournal 香氛圖鑑與穿香紀錄", short_name: "ScentJournal", start_url: ".", display: "standalone",
-                        background_color: "#FAF7F2", theme_color: "#1E1B18",
+                        name: "ScentJournal 香氛圖鑑與穿香紀錄",
+                        short_name: "ScentJournal",
+                        start_url: ".",
+                        display: "standalone",
+                        background_color: "#FAF7F2",
+                        theme_color: "#1E1B18",
                         icons: [{
                             src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#1E1B18"/><rect x="74" y="30" width="44" height="22" rx="6" fill="#B58E58"/><rect x="50" y="60" width="92" height="102" rx="18" fill="#FAF7F2" stroke="#B58E58" stroke-width="6"/><rect x="68" y="84" width="56" height="54" rx="6" fill="#F2ECE1"/></svg>`),
-                            sizes: "192x192", type: "image/svg+xml"
+                            sizes: "192x192",
+                            type: "image/svg+xml"
                         }]
                     };
                     const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-                    const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob);
+                    const link = document.createElement('link');
+                    link.rel = 'manifest';
+                    link.href = URL.createObjectURL(blob);
                     document.head.appendChild(link);
                 } catch (e) {}
             },
@@ -745,18 +733,25 @@
                     this.perfumes = savedPerfumes ? JSON.parse(savedPerfumes) : [];
                     this.logs = savedLogs ? JSON.parse(savedLogs) : [];
                 } catch (e) {
-                    this.perfumes = []; this.logs = [];
+                    this.perfumes = [];
+                    this.logs = [];
                 }
             },
 
             savePerfumesToStorage() {
-                try { localStorage.setItem(STORAGE_KEYS.PERFUMES, JSON.stringify(this.perfumes)); } 
-                catch (e) { this.showToast('儲存失敗：瀏覽器空間可能已滿', 'error'); }
+                try {
+                    localStorage.setItem(STORAGE_KEYS.PERFUMES, JSON.stringify(this.perfumes));
+                } catch (e) {
+                    this.showToast('儲存失敗：瀏覽器空間可能已滿', 'error');
+                }
             },
 
             saveLogsToStorage() {
-                try { localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(this.logs)); } 
-                catch (e) { this.showToast('日誌儲存失敗', 'error'); }
+                try {
+                    localStorage.setItem(STORAGE_KEYS.LOGS, JSON.stringify(this.logs));
+                } catch (e) {
+                    this.showToast('日誌儲存失敗', 'error');
+                }
             },
 
             openApiKeyModal() {
@@ -765,7 +760,9 @@
                 document.getElementById('api-key-modal').classList.remove('hidden');
             },
 
-            closeApiKeyModal() { document.getElementById('api-key-modal').classList.add('hidden'); },
+            closeApiKeyModal() {
+                document.getElementById('api-key-modal').classList.add('hidden');
+            },
 
             saveApiKey() {
                 const key = document.getElementById('input-api-key').value.trim();
@@ -783,7 +780,6 @@
                     const norm = filterText.toLowerCase();
                     filtered = brands.filter(b => b.toLowerCase().includes(norm));
                 }
-                
                 if (filtered.length === 0) {
                     listEl.innerHTML = `<li class="px-3.5 py-2 text-muted text-xs">無相符品牌，可直接輸入建立新品牌</li>`;
                 } else {
@@ -823,7 +819,6 @@
                 const listEl = document.getElementById('name-custom-list');
                 const currentBrand = document.getElementById('form-brand').value.trim().toLowerCase();
                 let availableNames = [];
-
                 if (currentBrand) {
                     availableNames = FRAGRANCE_CATALOG
                         .filter(c => c.brand.toLowerCase().includes(currentBrand) || currentBrand.includes(c.brand.toLowerCase()))
@@ -831,7 +826,7 @@
                 } else {
                     availableNames = [...new Set(FRAGRANCE_CATALOG.map(c => c.name))];
                 }
-
+                
                 let filtered = availableNames.sort();
                 if (filterText) {
                     const norm = filterText.toLowerCase();
@@ -873,8 +868,9 @@
                 document.getElementById('name-custom-list').classList.add('hidden');
 
                 const brandVal = brandEl.value.trim();
-                const found = FRAGRANCE_CATALOG.find(c =>
-                    c.name === nameStr && (!brandVal || c.brand.toLowerCase().includes(brandVal.toLowerCase()))
+                const found = FRAGRANCE_CATALOG.find(c => 
+                    c.name === nameStr && 
+                    (!brandVal || c.brand.toLowerCase().includes(brandVal.toLowerCase()))
                 );
 
                 if (found) {
@@ -930,11 +926,10 @@
             renderBrandSuggestionChips(items) {
                 const suggestionBox = document.getElementById('brand-quick-suggestions');
                 const chipsContainer = document.getElementById('brand-suggestion-chips');
-
                 suggestionBox.classList.remove('hidden');
+                
                 chipsContainer.innerHTML = items.map(m => `
-                    <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" 
-                        class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all">
+                    <button type="button" onclick="app.applyCatalogItem('${m.brand.replace(/'/g, "\\'")}', '${m.name.replace(/'/g, "\\'")}')" class="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-200 hover:border-gold hover:bg-goldLight/40 text-ink transition-all">
                         ${this.escapeHtml(m.name)}
                     </button>
                 `).join('');
@@ -943,15 +938,14 @@
             async fetchOnlineBrandSuggestions() {
                 const brand = document.getElementById('form-brand').value.trim();
                 if (!brand) return;
-
                 const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
                 if (!apiKey) return;
 
                 this.showLookupStatus(`正在查找網路上「${brand}」最熱門的香水清單...`, true);
-
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
                 const prompt = `請嚴格根據真實香水市場與品牌官方資訊，列出品牌「${brand}」最知名、最熱門的 6 款代表性香水及其完整香調表。
-【嚴格規定】brand 欄位絕對不能包含任何代理商名稱或分類字眼（例如絕對禁止出現「迷香人旗下品牌」、「夏利夫」等字眼），只能回傳純粹的官方品牌名稱。`;
+                【嚴格規定】brand 欄位絕對不能包含任何代理商名稱或分類字眼（例如絕對禁止出現「迷香人旗下品牌」、「夏利夫」等字眼），只能回傳純粹的官方品牌名稱。`;
 
                 const payload = {
                     contents: [{ parts: [{ text: prompt }] }],
@@ -962,9 +956,13 @@
                             items: {
                                 type: "OBJECT",
                                 properties: {
-                                    brand: { type: "STRING" }, name: { type: "STRING" }, concentration: { type: "STRING" },
-                                    family: { type: "STRING" }, topNotes: { type: "ARRAY", items: { type: "STRING" } },
-                                    midNotes: { type: "ARRAY", items: { type: "STRING" } }, baseNotes: { type: "ARRAY", items: { type: "STRING" } }
+                                    brand: { type: "STRING" },
+                                    name: { type: "STRING" },
+                                    concentration: { type: "STRING" },
+                                    family: { type: "STRING" },
+                                    topNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                    midNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                    baseNotes: { type: "ARRAY", items: { type: "STRING" } }
                                 },
                                 propertyOrdering: ["brand", "name", "concentration", "family", "topNotes", "midNotes", "baseNotes"]
                             }
@@ -974,11 +972,15 @@
 
                 try {
                     const response = await fetch(apiUrl, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
                     });
+                    
                     if (!response.ok) throw new Error('Network error');
                     const result = await response.json();
                     const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
                     if (text) {
                         const list = JSON.parse(text);
                         if (Array.isArray(list) && list.length > 0) {
@@ -987,7 +989,7 @@
                                 const cleanName = item.name.trim();
                                 const normBrand = cleanBrand.toLowerCase();
                                 const normName = cleanName.toLowerCase();
-
+                                
                                 const exists = FRAGRANCE_CATALOG.some(c => {
                                     const cBrand = c.brand.toLowerCase();
                                     if (!cBrand.includes(normBrand) && !normBrand.includes(cBrand)) return false;
@@ -995,12 +997,17 @@
                                     const cAliases = (c.aliases || []).map(a => a.toLowerCase());
                                     return cName === normName || cName.includes(normName) || normName.includes(cName) || cAliases.some(a => a === normName || normName.includes(a));
                                 });
-
+                                
                                 if (!exists) {
                                     FRAGRANCE_CATALOG.push({
-                                        brand: cleanBrand, name: cleanName, aliases: [cleanName.toLowerCase()],
-                                        concentration: item.concentration, family: item.family,
-                                        topNotes: item.topNotes || [], midNotes: item.midNotes || [], baseNotes: item.baseNotes || []
+                                        brand: cleanBrand,
+                                        name: cleanName,
+                                        aliases: [cleanName.toLowerCase()],
+                                        concentration: item.concentration,
+                                        family: item.family,
+                                        topNotes: item.topNotes || [],
+                                        midNotes: item.midNotes || [],
+                                        baseNotes: item.baseNotes || []
                                     });
                                 }
                             });
@@ -1027,125 +1034,128 @@
             },
 
             onBrandOrNameBlur() {
-                const brand = document.getElementById('form-brand').value.trim();
-                const name = document.getElementById('form-name').value.trim();
-                if (brand && name) {
-                    const currentTop = document.getElementById('form-top-notes').value.trim();
-                    if (!currentTop) {
-                        this.lookupFragranceInfo(false);
-                    }
-                }
+                // 已關閉：移除自動觸發，避免使用者打字一半就被 AI 抓走，請使用者手動點擊「自動查找香調」
             },
 
             fillFragranceFields(data) {
-                        if (data.brand) document.getElementById('form-brand').value = this.normalizeBrandName(data.brand);
-                        if (data.name) document.getElementById('form-name').value = data.name;
-                        
-                        // 修正濃度對應
-                        if (data.concentration) {
-                            const concSelect = document.getElementById('form-concentration');
-                            const options = Array.from(concSelect.options).map(o => o.value);
-                            if (options.includes(data.concentration)) {
-                                concSelect.value = data.concentration;
-                            } else {
-                                concSelect.value = "EDP 淡香精"; // 預設防呆
-                            }
-                        }
-                        
-                        // 修正主香調對應
-                        if (data.family) {
-                            const familyInput = document.getElementById('form-family');
-                            if (familyInput) familyInput.value = data.family;
-                        }
-                        
-                        if (Array.isArray(data.topNotes)) document.getElementById('form-top-notes').value = data.topNotes.join('、');
-                        if (Array.isArray(data.midNotes)) document.getElementById('form-mid-notes').value = data.midNotes.join('、');
-                        if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
-                    },
+                if (data.brand) document.getElementById('form-brand').value = this.normalizeBrandName(data.brand);
+                if (data.name) document.getElementById('form-name').value = data.name;
+                
+                if (data.concentration) {
+                    const concSelect = document.getElementById('form-concentration');
+                    const options = Array.from(concSelect.options).map(o => o.value);
+                    if (options.includes(data.concentration)) {
+                        concSelect.value = data.concentration;
+                    } else {
+                        concSelect.value = "EDP 淡香精"; 
+                    }
+                }
+                
+                if (data.family) {
+                    const familyInput = document.getElementById('form-family');
+                    if (familyInput) familyInput.value = data.family;
+                }
+                
+                if (Array.isArray(data.topNotes)) document.getElementById('form-top-notes').value = data.topNotes.join('、');
+                if (Array.isArray(data.midNotes)) document.getElementById('form-mid-notes').value = data.midNotes.join('、');
+                if (Array.isArray(data.baseNotes)) document.getElementById('form-base-notes').value = data.baseNotes.join('、');
+            },
 
             showLookupStatus(msg, isLoading = false) {
                 const box = document.getElementById('lookup-status');
                 const spinner = document.getElementById('lookup-spinner');
                 const text = document.getElementById('lookup-status-text');
                 box.classList.remove('hidden');
-                if (isLoading) spinner.classList.remove('hidden'); 
+                if (isLoading) spinner.classList.remove('hidden');
                 else spinner.classList.add('hidden');
                 text.textContent = msg;
             },
 
-        async lookupFragranceInfo(forceOverwrite = true) {
-    const brand = document.getElementById('form-brand').value.trim();
-    const name = document.getElementById('form-name').value.trim();
+            async lookupFragranceInfo(forceOverwrite = true) {
+                const brand = document.getElementById('form-brand').value.trim();
+                const name = document.getElementById('form-name').value.trim();
 
-    if (!brand && !name) {
-        this.showToast('請先輸入品牌與香水名稱', 'error');
-        return;
-    }
-
-    // 1. 【第一優先】嚴格先從本機靜態資料庫 (FRAGRANCE_CATALOG) 搜尋
-    const normBrand = brand.toLowerCase();
-    const normName = name.toLowerCase();
-    const localMatch = FRAGRANCE_CATALOG.find(item => {
-        const bMatch = !normBrand || item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase());
-        const nMatch = item.name.toLowerCase().includes(normName) || (item.aliases || []).some(a => normName.includes(a.toLowerCase()) || a.toLowerCase().includes(normName));
-        return bMatch && nMatch && normName.length > 0;
-    });
-
-    if (localMatch) {
-        this.fillFragranceFields(localMatch);
-        this.showLookupStatus(`已從本機資料庫成功帶入「${localMatch.brand} - ${localMatch.name}」`, false);
-        return; // 資料庫找得到就直接結束，絕對不上網！
-    }
-
-    // 2. 【第二候補】只有在本機資料庫「完全找不到」時，才啟用 Gemini API 上網搜尋
-    const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
-    if (!apiKey) {
-        this.showToast('本機資料庫無此香水，請點擊右上角「設定金鑰」以啟用線上 AI 查找', 'error');
-        return;
-    }
-
-    this.showLookupStatus(`本機資料庫無此筆資料，正在透過 gemini-3-flash-preview 上網檢索...`, true);
-
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-    const prompt = `使用者輸入了品牌「${brand}」與香水名稱「${name}」。
-請校正品牌與香水為官方正式中英文名稱。
-【絕對禁止】brand 欄位出現任何代理商或通路分類字眼（如「迷香人旗下品牌」、「夏利夫」等），只能回傳真實品牌名稱。
-請提供 concentration、family、topNotes、midNotes、baseNotes。`;
-
-    const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: "OBJECT",
-                properties: {
-                    brand: { type: "STRING" }, name: { type: "STRING" }, concentration: { type: "STRING" },
-                    family: { type: "STRING" }, topNotes: { type: "ARRAY", items: { type: "STRING" } },
-                    midNotes: { type: "ARRAY", items: { type: "STRING" } }, baseNotes: { type: "ARRAY", items: { type: "STRING" } }
+                if (!brand && !name) {
+                    this.showToast('請先輸入品牌與香水名稱', 'error');
+                    return;
                 }
-            }
-        }
-    };
 
-    try {
-        const response = await fetch(apiUrl, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-        });
-        if (!response.ok) throw new Error('Network error');
-        const result = await response.json();
-        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-            const data = JSON.parse(text);
-            data.brand = this.normalizeBrandName(data.brand || brand);
-            this.fillFragranceFields(data);
-            this.showLookupStatus(`已透過線上 AI 找到並帶入香調表`, false);
-            return;
-        }
-        throw new Error('Empty result');
-    } catch (e) {
-        this.showLookupStatus(`未能找到該香水，請手動填寫`, false);
-    }         
-}, 
+                // 1. 【第一優先】嚴格先從本機靜態資料庫 (FRAGRANCE_CATALOG) 搜尋
+                const normBrand = brand.toLowerCase();
+                const normName = name.toLowerCase();
+
+                const localMatch = FRAGRANCE_CATALOG.find(item => {
+                    // 放寬條件，只要字眼有包涵在內就算成功
+                    const bMatch = !normBrand || item.brand.toLowerCase().includes(normBrand) || normBrand.includes(item.brand.toLowerCase());
+                    const nMatch = !normName || 
+                                   item.name.toLowerCase().includes(normName) || 
+                                   normName.includes(item.name.toLowerCase()) || 
+                                   (item.aliases || []).some(a => normName.includes(a.toLowerCase()) || a.toLowerCase().includes(normName));
+                    return bMatch && nMatch;
+                });
+
+                if (localMatch) {
+                    this.fillFragranceFields(localMatch);
+                    this.showLookupStatus(`已從本機資料庫成功帶入「${localMatch.brand} - ${localMatch.name}」`, false);
+                    return; // 本機有找到就絕對不上網
+                }
+
+                // 2. 【第二候補】只有在本機資料庫「完全找不到」時，才啟用 Gemini API 上網搜尋
+                const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
+                if (!apiKey) {
+                    this.showToast('本機資料庫無此香水，請點擊右上角「設定金鑰」以啟用線上 AI 查找', 'error');
+                    return;
+                }
+
+                this.showLookupStatus(`本機資料庫無此筆資料，正在透過 gemini-3-flash-preview 上網檢索...`, true);
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                const prompt = `使用者輸入了品牌「${brand}」與香水名稱「${name}」。 請校正品牌與香水為官方正式中英文名稱。 
+                【絕對禁止】brand 欄位出現任何代理商或通路分類字眼（如「迷香人旗下品牌」、「夏利夫」等），只能回傳真實品牌名稱。 
+                請提供 concentration、family、topNotes、midNotes、baseNotes。`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                brand: { type: "STRING" },
+                                name: { type: "STRING" },
+                                concentration: { type: "STRING" },
+                                family: { type: "STRING" },
+                                topNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                midNotes: { type: "ARRAY", items: { type: "STRING" } },
+                                baseNotes: { type: "ARRAY", items: { type: "STRING" } }
+                            }
+                        }
+                    }
+                };
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error('Network error');
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    
+                    if (text) {
+                        const data = JSON.parse(text);
+                        data.brand = this.normalizeBrandName(data.brand || brand);
+                        this.fillFragranceFields(data);
+                        this.showLookupStatus(`已透過線上 AI 找到並帶入香調表`, false);
+                        return;
+                    }
+                    throw new Error('Empty result');
+                } catch (e) {
+                    this.showLookupStatus(`未能找到該香水，請手動填寫`, false);
+                }
+            },
 
             setWardrobeMode(mode) {
                 this.wardrobeMode = mode;
@@ -1185,21 +1195,20 @@
                 const searchBtn = document.getElementById('btn-toggle-search');
                 const filterBtn = document.getElementById('btn-toggle-filter');
                 const filterLabel = document.getElementById('filter-btn-label');
+                
                 const hasQuery = (document.getElementById('search-input')?.value || '').trim().length > 0;
                 const hasFamily = this.selectedFamily !== 'all';
 
                 if (searchBtn) {
-                    searchBtn.className = (this.isSearchOpen || hasQuery)
+                    searchBtn.className = (this.isSearchOpen || hasQuery) 
                         ? 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm'
                         : 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
                 }
-
                 if (filterBtn) {
                     filterBtn.className = (this.isFilterOpen || hasFamily)
                         ? 'h-8 px-2.5 rounded-lg border border-ink bg-ink text-paper text-xs font-medium transition-all flex items-center gap-1 shadow-sm'
                         : 'h-8 px-2.5 rounded-lg border border-stone-200 bg-paper text-muted hover:text-ink hover:border-gold text-xs font-medium transition-all flex items-center gap-1';
                 }
-
                 if (filterLabel) filterLabel.textContent = hasFamily ? this.selectedFamily : '香調分類';
             },
 
@@ -1212,7 +1221,7 @@
 
                 const colCount = this.perfumes.filter(p => p.status === 'owned' || p.status === 'sample').length;
                 const wishCount = this.perfumes.filter(p => p.status === 'wishlist').length;
-
+                
                 if (colCountEl) colCountEl.textContent = colCount;
                 if (wishCountEl) wishCountEl.textContent = wishCount;
 
@@ -1241,24 +1250,19 @@
                     return p.status === 'owned' || p.status === 'sample';
                 });
 
-                const dynamicFamilies = [...new Set([
-                    ...basePool.map(p => p.family).filter(Boolean),
-                    ...BASE_FAMILIES
-                ])];
+                const dynamicFamilies = [...new Set([...basePool.map(p => p.family).filter(Boolean), ...BASE_FAMILIES])];
                 const families = ['all', ...dynamicFamilies];
 
                 container.innerHTML = families.map(fam => {
                     const isActive = this.selectedFamily === fam;
                     const label = fam === 'all' ? '全部香調' : fam;
-                    const count = fam === 'all'
-                        ? basePool.length
-                        : basePool.filter(p => p.family === fam).length;
-
+                    const count = fam === 'all' ? basePool.length : basePool.filter(p => p.family === fam).length;
+                    
                     return `
                         <button onclick="app.setFamilyFilter('${this.escapeHtml(fam)}')" 
-                            class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all flex items-center gap-1 border ${
-                                isActive ? 'bg-ink text-paper border-ink shadow-sm' : 'bg-paper text-muted border-stone-200 hover:border-gold hover:text-ink'
-                            }">
+                                class="px-2.5 py-1 rounded-lg text-xs font-medium transition-all flex items-center gap-1 border ${
+                                    isActive ? 'bg-ink text-paper border-ink shadow-sm' : 'bg-paper text-muted border-stone-200 hover:border-gold hover:text-ink'
+                                }">
                             <span>${this.escapeHtml(label)}</span>
                             <span class="px-1.5 py-0.2 rounded-full text-[10px] ${isActive ? 'bg-white/20 text-paper' : 'bg-cream text-muted'}">${count}</span>
                         </button>
@@ -1283,8 +1287,8 @@
                 const query = (document.getElementById('search-input')?.value || '').trim().toLowerCase();
                 const statusFilter = document.getElementById('filter-status')?.value || 'all';
                 const sortBy = document.getElementById('sort-by')?.value || 'newest';
-
                 const clearBtn = document.getElementById('clear-search-btn');
+
                 if (clearBtn) clearBtn.classList.toggle('hidden', query.length === 0);
                 this.updateCompactButtonsState();
 
@@ -1394,7 +1398,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                     <div class="flex items-center gap-1 shrink-0">
                                         <button onclick="app.openPerfumeModal('${p.id}')" title="編輯" class="w-7 h-7 rounded-lg text-muted hover:text-ink hover:bg-cream flex items-center justify-center transition-colors">
                                             <i class="ph ph-pencil-simple text-sm"></i>
@@ -1404,7 +1407,6 @@
                                         </button>
                                     </div>
                                 </div>
-
                                 <div onclick="app.openDetailModal('${p.id}')" class="bg-paper/80 border border-stone-200/70 rounded-xl p-3 space-y-1.5 text-xs cursor-pointer">
                                     <div class="flex items-baseline gap-2">
                                         <span class="text-[11px] font-medium text-muted shrink-0 w-9">前調</span>
@@ -1427,13 +1429,11 @@
                                     ${(p.status !== 'wishlist' && p.price) ? `<span>· NT$${Number(p.price).toLocaleString()}</span>` : ''}
                                     ${(p.status !== 'wishlist' && p.purchaseLocation) ? `<span class="truncate max-w-[130px]" title="${this.escapeHtml(p.purchaseLocation)}">· <i class="ph ph-map-pin text-gold"></i> ${this.escapeHtml(p.purchaseLocation)}</span>` : ''}
                                 </div>
-
                                 <div class="flex items-center gap-1.5 shrink-0">
                                     ${p.status !== 'wishlist' ? `
                                         <button onclick="app.markAsEmpty('${p.id}')" title="標記為已用完空瓶" class="px-2.5 py-1 rounded-lg border border-stone-200 text-muted hover:text-ink hover:border-stone-400 text-[11px] font-medium transition-all">已用完</button>
                                         <button onclick="app.quickWear('${p.id}')" class="px-2.5 py-1 rounded-lg bg-cream hover:bg-goldLight text-ink text-[11px] font-medium transition-all flex items-center gap-1">
-                                            <i class="ph ph-spray-bottle text-gold"></i>
-                                            <span>穿香 (${p.wornCount || 0})</span>
+                                            <i class="ph ph-spray-bottle text-gold"></i> <span>穿香 (${p.wornCount || 0})</span>
                                         </button>
                                     ` : `
                                         <button onclick="app.openPerfumeModal('${p.id}')" class="px-2.5 py-1 rounded-lg bg-cream hover:bg-goldLight text-ink text-[11px] font-medium transition-all">編輯狀態</button>
@@ -1459,6 +1459,7 @@
                 const status = document.getElementById('form-status').value;
                 const priceWrapper = document.getElementById('form-price-wrapper');
                 const locWrapper = document.getElementById('form-location-wrapper');
+                
                 if (status === 'wishlist') {
                     priceWrapper.classList.add('hidden');
                     locWrapper.classList.add('hidden');
@@ -1471,12 +1472,12 @@
             openPerfumeModal(editId = null) {
                 const modal = document.getElementById('perfume-modal');
                 const title = document.getElementById('modal-form-title');
-                
                 this.clearPerfumeForm();
 
                 if (editId) {
                     const p = this.perfumes.find(item => item.id === editId);
                     if (!p) return;
+                    
                     title.textContent = '編輯香水檔案';
                     document.getElementById('form-id').value = p.id;
                     document.getElementById('form-brand').value = p.brand || '';
@@ -1500,7 +1501,9 @@
                 modal.classList.remove('hidden');
             },
 
-            closePerfumeModal() { document.getElementById('perfume-modal').classList.add('hidden'); },
+            closePerfumeModal() {
+                document.getElementById('perfume-modal').classList.add('hidden');
+            },
 
             splitNotes(str) {
                 if (!str) return [];
@@ -1509,14 +1512,17 @@
 
             savePerfume(e) {
                 e.preventDefault();
+                
                 const id = document.getElementById('form-id').value;
                 const brand = this.normalizeBrandName(document.getElementById('form-brand').value.trim());
                 const name = document.getElementById('form-name').value.trim();
                 const concentration = document.getElementById('form-concentration').value;
                 const family = document.getElementById('form-family').value;
+                
                 const topNotes = this.splitNotes(document.getElementById('form-top-notes').value);
                 const midNotes = this.splitNotes(document.getElementById('form-mid-notes').value);
                 const baseNotes = this.splitNotes(document.getElementById('form-base-notes').value);
+                
                 const status = document.getElementById('form-status').value;
                 const volumeVal = document.getElementById('form-volume').value;
                 const priceVal = document.getElementById('form-price').value;
@@ -1538,36 +1544,40 @@
                     if (idx !== -1) {
                         this.perfumes[idx] = {
                             ...this.perfumes[idx],
-                            brand, name, concentration, family, topNotes, midNotes, baseNotes, status, volume, price, purchaseLocation
+                            brand, name, concentration, family,
+                            topNotes, midNotes, baseNotes,
+                            status, volume, price, purchaseLocation
                         };
                         this.showToast('已更新香水資料');
                     }
                 } else {
                     const newPerfume = {
                         id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-                        brand, name, concentration, family, topNotes, midNotes, baseNotes, status, volume, price, purchaseLocation,
-                        wornCount: 0, createdAt: new Date().toISOString()
+                        brand, name, concentration, family,
+                        topNotes, midNotes, baseNotes,
+                        status, volume, price, purchaseLocation,
+                        wornCount: 0,
+                        createdAt: new Date().toISOString()
                     };
                     this.perfumes.unshift(newPerfume);
-                    
                     FRAGRANCE_CATALOG.push({ brand, name, concentration, family, topNotes, midNotes, baseNotes });
-                
                     this.showToast('已新增香水紀錄');
                 }
 
                 this.savePerfumesToStorage();
                 this.closePerfumeModal();
                 this.clearPerfumeForm();
-
+                
                 if (status === 'wishlist') this.wardrobeMode = 'wishlist';
                 else if (status === 'owned' || status === 'sample') this.wardrobeMode = 'collection';
+                
                 this.renderAll();
 
                 if (isNewToCatalog) {
                     setTimeout(() => {
                         const wantsToUpload = confirm(`「${brand} - ${name}」是全新的香水資料！\n\n是否願意將此香調上傳至公開資料庫？`);
                         if (wantsToUpload) {
-                            fetch('https://prospect-drinking-premier-linda.trycloudflare.com/api/upload-fragrance', { 
+                            fetch('https://prospect-drinking-premier-linda.trycloudflare.com/api/upload-fragrance', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ brand, name, concentration, family, topNotes, midNotes, baseNotes })
@@ -1596,7 +1606,7 @@
                 const p = this.perfumes.find(item => item.id === id);
                 if (!p) return;
                 p.wornCount = (p.wornCount || 0) + 1;
-
+                
                 const todayStr = new Date().toISOString().split('T')[0];
                 const newLog = {
                     id: 'log_' + Date.now(),
@@ -1604,10 +1614,14 @@
                     perfumeId: p.id,
                     perfumeNameSnapshot: p.name,
                     perfumeBrandSnapshot: p.brand,
-                    weather: '', occasion: '', sprays: '', spot: '', note: ''
+                    weather: '',
+                    occasion: '',
+                    sprays: '',
+                    spot: '',
+                    note: ''
                 };
                 this.logs.unshift(newLog);
-
+                
                 this.savePerfumesToStorage();
                 this.saveLogsToStorage();
                 this.renderAll();
@@ -1617,6 +1631,7 @@
             confirmDeletePerfume(id) {
                 const p = this.perfumes.find(item => item.id === id);
                 if (!p) return;
+                
                 this.openConfirmModal(
                     '刪除香水紀錄',
                     `確定要刪除「${p.brand} - ${p.name}」嗎？此操作無法復原。`,
@@ -1633,9 +1648,11 @@
             openDetailModal(id) {
                 const p = this.perfumes.find(item => item.id === id);
                 if (!p) return;
+
                 const modal = document.getElementById('detail-modal');
                 const content = document.getElementById('detail-modal-content');
                 const famColor = getFamilyStyle(p.family);
+                
                 const statusText = p.status === 'owned' ? '正裝' : (p.status === 'sample' ? '試香 / 分裝' : (p.status === 'empty' ? '已用完空瓶' : '願望清單'));
 
                 const renderNotePills = (arr) => {
@@ -1682,19 +1699,21 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="flex items-center justify-between pt-2 border-t border-stone-200">
-                            <div class="flex items-center gap-2">
-                                <button onclick="app.closeDetailModal(); app.openPerfumeModal('${p.id}')" class="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-medium text-ink hover:bg-cream flex items-center gap-1.5"><i class="ph ph-pencil-simple"></i> 編輯</button>
-                            </div>
-                            <button onclick="app.closeDetailModal()" class="px-4 py-2 rounded-xl bg-ink text-paper text-xs font-medium">關閉</button>
+                    <div class="flex items-center justify-between pt-2 border-t border-stone-200">
+                        <div class="flex items-center gap-2">
+                            <button onclick="app.closeDetailModal(); app.openPerfumeModal('${p.id}')" class="px-3.5 py-2 rounded-xl border border-stone-200 text-xs font-medium text-ink hover:bg-cream flex items-center gap-1.5"><i class="ph ph-pencil-simple"></i> 編輯</button>
                         </div>
+                        <button onclick="app.closeDetailModal()" class="px-4 py-2 rounded-xl bg-ink text-paper text-xs font-medium">關閉</button>
                     </div>
                 `;
                 modal.classList.remove('hidden');
             },
 
-            closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); },
+            closeDetailModal() {
+                document.getElementById('detail-modal').classList.add('hidden');
+            },
 
             setSotdMood(text) {
                 const input = document.getElementById('sotd-occasion');
@@ -1704,15 +1723,16 @@
             renderSotdSection() {
                 const select = document.getElementById('sotd-perfume-id');
                 const wearable = this.perfumes.filter(p => p.status === 'owned' || p.status === 'sample');
-
+                
                 if (wearable.length === 0) {
                     select.innerHTML = `<option value="" disabled selected>目前尚無可穿戴的香水</option>`;
                 } else {
-                    select.innerHTML = `<option value="" disabled selected>請選擇香水...</option>` +
+                    select.innerHTML = `<option value="" disabled selected>請選擇香水...</option>` + 
                         wearable.map(p => `<option value="${p.id}">${this.escapeHtml(p.brand)} — ${this.escapeHtml(p.name)}</option>`).join('');
                 }
 
                 document.getElementById('sotd-total-count').textContent = `共 ${this.logs.length} 筆穿香紀錄`;
+
                 const timeline = document.getElementById('sotd-timeline');
                 if (this.logs.length === 0) {
                     timeline.innerHTML = `<div class="bg-white/70 border border-dashed border-stone-300 rounded-2xl p-10 text-center space-y-2"><i class="ph ph-calendar-blank text-2xl text-muted"></i><p class="text-sm font-medium text-ink">尚無穿香日誌</p></div>`;
@@ -1720,10 +1740,12 @@
                 }
 
                 const sortedLogs = [...this.logs].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                
                 timeline.innerHTML = sortedLogs.map(log => {
                     const perfume = this.perfumes.find(p => p.id === log.perfumeId);
                     const brand = perfume ? perfume.brand : (log.perfumeBrandSnapshot || '');
                     const name = perfume ? perfume.name : (log.perfumeNameSnapshot || '已刪除的香水');
+
                     return `
                         <div class="bg-white border border-stone-200/80 rounded-2xl p-4 flex items-start justify-between gap-3 shadow-sm">
                             <div class="space-y-1.5 min-w-0">
@@ -1752,7 +1774,10 @@
                 const spot = document.getElementById('sotd-spot').value.trim();
                 const note = document.getElementById('sotd-note').value.trim();
 
-                if (!perfumeId) { this.showToast('請選擇今日穿戴的香水', 'error'); return; }
+                if (!perfumeId) {
+                    this.showToast('請選擇今日穿戴的香水', 'error');
+                    return;
+                }
 
                 const perfume = this.perfumes.find(p => p.id === perfumeId);
                 if (perfume) {
@@ -1760,7 +1785,14 @@
                     this.savePerfumesToStorage();
                 }
 
-                this.logs.unshift({ id: 'log_' + Date.now(), date, weather, perfumeId, perfumeBrandSnapshot: perfume ? perfume.brand : '', perfumeNameSnapshot: perfume ? perfume.name : '', occasion, sprays, spot, note });
+                this.logs.unshift({
+                    id: 'log_' + Date.now(),
+                    date, weather, perfumeId,
+                    perfumeBrandSnapshot: perfume ? perfume.brand : '',
+                    perfumeNameSnapshot: perfume ? perfume.name : '',
+                    occasion, sprays, spot, note
+                });
+
                 this.saveLogsToStorage();
                 document.getElementById('sotd-form').reset();
                 this.renderSotdSection();
@@ -1771,12 +1803,14 @@
             deleteSotdLog(logId) {
                 const idx = this.logs.findIndex(l => l.id === logId);
                 if (idx === -1) return;
+
                 const log = this.logs[idx];
                 const perfume = this.perfumes.find(p => p.id === log.perfumeId);
                 if (perfume && (perfume.wornCount || 0) > 0) {
                     perfume.wornCount -= 1;
                     this.savePerfumesToStorage();
                 }
+
                 this.logs.splice(idx, 1);
                 this.saveLogsToStorage();
                 this.renderSotdSection();
@@ -1826,8 +1860,11 @@
                 const notesContainer = document.getElementById('stats-top-notes');
                 const noteFreq = {};
                 acquired.forEach(p => {
-                    [...(p.topNotes || []), ...(p.midNotes || []), ...(p.baseNotes || [])].forEach(n => { if (n) noteFreq[n] = (noteFreq[n] || 0) + 1; });
+                    [...(p.topNotes || []), ...(p.midNotes || []), ...(p.baseNotes || [])].forEach(n => {
+                        if (n) noteFreq[n] = (noteFreq[n] || 0) + 1;
+                    });
                 });
+                
                 notesContainer.innerHTML = Object.entries(noteFreq).sort((a, b) => b[1] - a[1]).slice(0, 18).map(([note, count]) => `
                     <span class="px-3 py-1.5 rounded-xl bg-paper border border-stone-200 text-xs text-ink flex items-center gap-1.5">
                         <span>${this.escapeHtml(note)}</span><span class="text-[10px] px-1.5 py-0.2 rounded-full bg-cream text-muted font-semibold">${count}</span>
@@ -1835,7 +1872,8 @@
                 `).join('') || `<p class="text-xs text-muted py-4 text-center w-full">尚無香材數據</p>`;
 
                 document.getElementById('stats-empties-count').textContent = `共 ${emptyList.length} 支空瓶`;
-                document.getElementById('stats-empties-grid').innerHTML = emptyList.length === 0 ? `<div class="col-span-full py-6 text-center text-xs text-muted">目前尚無空瓶紀錄</div>` : emptyList.map(p => `
+                document.getElementById('stats-empties-grid').innerHTML = emptyList.length === 0 ? `<div class="col-span-full py-6 text-center text-xs text-muted">目前尚無空瓶紀錄</div>` : 
+                emptyList.map(p => `
                     <div class="bg-paper border border-stone-200/90 rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3">
                         <div class="min-w-0"><div class="text-[11px] font-semibold uppercase tracking-wider text-muted truncate">${this.escapeHtml(p.brand)}</div><div class="text-sm font-bold text-ink truncate">${this.escapeHtml(p.name)}</div></div>
                         <span class="px-2 py-0.5 rounded-md bg-white border border-stone-200 text-xs font-medium text-ink">${p.volume ? p.volume + 'ml' : ''}</span>
@@ -1844,11 +1882,21 @@
             },
 
             exportData() {
-                const payload = { version: 3, exportedAt: new Date().toISOString(), perfumes: this.perfumes, logs: this.logs };
+                const payload = {
+                    version: 3,
+                    exportedAt: new Date().toISOString(),
+                    perfumes: this.perfumes,
+                    logs: this.logs
+                };
                 const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `scentjournal_backup_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `scentjournal_backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
                 this.showToast('已匯出 JSON 備份檔');
             },
 
@@ -1860,11 +1908,17 @@
                     try {
                         const data = JSON.parse(e.target.result);
                         if (!Array.isArray(data.perfumes)) throw new Error('Invalid format');
-                        this.perfumes = data.perfumes; this.logs = Array.isArray(data.logs) ? data.logs : [];
-                        this.savePerfumesToStorage(); this.saveLogsToStorage(); this.renderAll();
+                        this.perfumes = data.perfumes;
+                        this.logs = Array.isArray(data.logs) ? data.logs : [];
+                        this.savePerfumesToStorage();
+                        this.saveLogsToStorage();
+                        this.renderAll();
                         this.showToast('已成功匯入備份資料');
-                    } catch (err) { this.showToast('備份檔格式錯誤', 'error'); } 
-                    finally { event.target.value = ''; }
+                    } catch (err) {
+                        this.showToast('備份檔格式錯誤', 'error');
+                    } finally {
+                        event.target.value = '';
+                    }
                 };
                 reader.readAsText(file);
             },
@@ -1873,11 +1927,16 @@
                 document.getElementById('confirm-title').textContent = title;
                 document.getElementById('confirm-message').textContent = message;
                 const yesBtn = document.getElementById('confirm-yes-btn');
-                yesBtn.onclick = () => { this.closeConfirmModal(); if (typeof onConfirm === 'function') onConfirm(); };
+                yesBtn.onclick = () => {
+                    this.closeConfirmModal();
+                    if (typeof onConfirm === 'function') onConfirm();
+                };
                 document.getElementById('confirm-modal').classList.remove('hidden');
             },
 
-            closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); },
+            closeConfirmModal() {
+                document.getElementById('confirm-modal').classList.add('hidden');
+            },
 
             showToast(msg, type = 'success') {
                 const container = document.getElementById('toast-container');
@@ -1890,11 +1949,18 @@
 
             escapeHtml(str) {
                 if (str === null || str === undefined) return '';
-                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
             }
         };
 
-        window.addEventListener('DOMContentLoaded', () => { app.init(); });
+        window.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
     </script>
 </body>
 </html>
