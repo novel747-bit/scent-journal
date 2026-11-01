@@ -507,8 +507,7 @@
   this.setLookupButtonsDisabled(true);
   this.showLookupStatus(`正在透過 Google 搜尋查找「${brand}」最熱門的香水...`, true);
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  
+const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`;  
   const prompt = `請使用 Google 搜尋品牌「${brand}」最知名、最熱門的 5 款代表性香水及其官方香調表。
 請嚴格只回傳 JSON 陣列（最多 5 筆，不要包含 Markdown 語法或其他解釋文字），格式如下：
 [
@@ -649,8 +648,7 @@
   this.setLookupButtonsDisabled(true);
   this.showLookupStatus(`正在透過 Google 搜尋檢索「${brand} ${name}」的香調表...`, true);
 
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  
+const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${apiKey}`;  
   const prompt = `請使用 Google 搜尋查找香水：品牌「${brand}」、名稱「${name}」。
 如果找到多款相似香水，請列出最符合的前 1 到 5 款（最多 5 款）。
 請嚴格只回傳 JSON 陣列（不要加 Markdown 程式碼區塊或任何其他說明文字），格式如下：
