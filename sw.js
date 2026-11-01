@@ -1,16 +1,7 @@
-const CACHE_NAME = 'scent-journal-v1';
-const ASSETS = [
-  './index.html',
-  './manifest.json'
-];
+const CACHE_NAME = 'scent-journal-v2';
 
-// 安裝 Service Worker 並快取基本檔案
+// 安裝 Service Worker
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -30,11 +21,12 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// 攔截網路請求，支援離線讀取
+// 網路優先策略：先嘗試聯網取得最新內容，若離線則使用快取
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request)
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
